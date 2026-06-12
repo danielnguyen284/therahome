@@ -1,0 +1,19 @@
+{
+  "name": "therahome-workspace",
+  "version": "1.0.0",
+  "description": "TheraHome Monorepo Root Workspace Running Scripts",
+  "scripts": {
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:pwa": "npm run dev --prefix pwa-app",
+    "dev:admin": "npm run dev --prefix admin-panel",
+    "dev:app": "npm run start --prefix TheraEase-APP",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:pwa\" \"npm run dev:admin\"",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:pwa\" \"npm run dev:admin\" \"npm run dev:app\"",
+    "seed": "npm run seed --prefix backend",
+    "build:pwa": "npm run build --prefix pwa-app",
+    "build:admin": "npm run build --prefix admin-panel"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

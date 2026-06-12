@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: thera_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: thera_db
+    ports:
+      - "54329:5432"
+    volumes:
+      - thera_pgdata:/var/lib/postgresql/data
+
+volumes:
+  thera_pgdata:

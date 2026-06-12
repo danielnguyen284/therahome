@@ -1,0 +1,18 @@
+﻿app/(tabs)/settings.tsx(9,10): error TS2724: '"@/services/notifications"' has no exported member named 'scheduleDailyReminders'. Did you mean 'scheduleDailyReminder'?
+app/(tabs)/settings.tsx(9,34): error TS2305: Module '"@/services/notifications"' has no exported member 'cancelAllNotifications'.
+app/(tabs)/settings.tsx(14,17): error TS2339: Property 'clearUser' does not exist on type 'AuthState'.
+app/exercise-detail.tsx(10,10): error TS2724: '"@/services/feedback"' has no exported member named 'submitWorkoutFeedback'. Did you mean 'submitFeedback'?
+app/index.tsx(10,17): error TS2339: Property 'loading' does not exist on type 'AuthState'.
+app/pain-analysis.tsx(37,57): error TS2554: Expected 0-1 arguments, but got 2.
+app/recommendations.tsx(39,30): error TS2554: Expected 0-1 arguments, but got 2.
+app/recommendations.tsx(50,9): error TS2554: Expected 1 arguments, but got 5.
+app/recommendations.tsx(58,10): error TS2339: Property 'map' does not exist on type 'string'.
+app/recommendations.tsx(58,14): error TS7006: Parameter 'rec' implicitly has an 'any' type.
+app/recommendations.tsx(58,48): error TS7006: Parameter 'ex' implicitly has an 'any' type.
+app/recommendations.tsx(65,56): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+app/recommendations.tsx(65,61): error TS7006: Parameter 'log' implicitly has an 'any' type.
+app/workout-plan-detail.tsx(9,48): error TS2724: '"@/services/workoutPlans"' has no exported member named 'getUserPlanProgress'. Did you mean 'getPlanProgress'?
+app/workout-plan-detail.tsx(9,69): error TS2305: Module '"@/services/workoutPlans"' has no exported member 'WorkoutPlan'.
+app/workout-plan-detail.tsx(9,82): error TS2724: '"@/services/workoutPlans"' has no exported member named 'PlanExercise'. Did you mean 'getPlanExercises'?
+app/workout-plan-detail.tsx(77,30): error TS7006: Parameter 'ex' implicitly has an 'any' type.
+app/workout-plans.tsx(9,27): error TS2305: Module '"@/services/workoutPlans"' has no exported member 'WorkoutPlan'.

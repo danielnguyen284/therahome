@@ -1,0 +1,501 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                             String    @id @default(uuid()) @db.Uuid
+  googleId                       String?
+  email                          String    @unique
+  full_name                      String    @default("")
+  avatar_url                     String    @default("")
+  age                            Int       @default(0)
+  occupation                     String    @default("")
+  gender                         String    @default("")
+  height                         String    @default("")
+  weight                         String    @default("")
+  target_weight                  String    @default("")
+  primary_goal                   String    @default("")
+  focus_area                     String    @default("")
+  limitations                    String    @default("")
+  diet_type                      String    @default("")
+  pain_areas                     String[]
+  symptoms                       String[]
+  surgery_history                String    @default("")
+  preferred_time                 String    @default("08:00")
+  notifications_enabled          Boolean   @default(true)
+  onboarding_completed           Boolean   @default(false)
+  personalized_plan_started_at   DateTime?
+  personalized_plan_completed_at DateTime?
+  personalized_plan_unlock_at    DateTime?
+  role                           String    @default("user") // "user", "admin"
+  is_pro                         Boolean   @default(false)
+  password                       String?
+  created_at                     DateTime  @default(now())
+  updated_at                     DateTime  @default(now()) @updatedAt
+
+  workout_logs            WorkoutLog[]
+  workout_feedbacks       WorkoutFeedback[]
+  chat_histories          ChatHistory[]
+  daily_recommendations   DailyRecommendation[]
+  device_usage_logs       DeviceUsageLog[]
+  notification_tokens     NotificationToken[]
+  notification_overrides  NotificationUserOverride[]
+  notification_dispatches NotificationDispatchLog[]
+  product_instances       ProductInstance[]
+  product_assessments     ProductAssessment[]
+  product_reviews         ProductReview[]
+  user_devices            UserDevice[]
+  painLogs                PainLog[]
+  waterIntakes            WaterIntake[]
+  activation_codes        ActivationCode[]
+
+  @@map("users")
+}
+
+model UserDevice {
+  id              String   @id @default(uuid()) @db.Uuid
+  user_id         String   @db.Uuid
+  product_id      String   @db.Uuid
+  activation_code String
+  activated_at    DateTime @default(now())
+
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, activation_code])
+  @@map("user_devices")
+}
+
+model Product {
+  id            String   @id @default(uuid()) @db.Uuid
+  key           String   @unique
+  name          String
+  image_url     String   @default("")
+  purchase_link String   @default("")
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+
+  instances    ProductInstance[]
+  assessments  ProductAssessment[]
+  reviews      ProductReview[]
+  user_devices UserDevice[]
+
+  @@map("products")
+}
+
+model ProductInstance {
+  id              String    @id @default(uuid()) @db.Uuid
+  product_id      String    @db.Uuid
+  activation_code String    @unique
+  is_activated    Boolean   @default(false)
+  activated_by    String?   @db.Uuid
+  activated_at    DateTime?
+  created_at      DateTime  @default(now())
+
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [activated_by], references: [id], onDelete: SetNull)
+
+  @@map("product_instances")
+}
+
+model ProductAssessment {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  product_id String   @db.Uuid
+  rating     Int
+  comment    String   @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, product_id])
+  @@map("product_assessments")
+}
+
+model ProductReview {
+  id          String   @id @default(uuid()) @db.Uuid
+  product_id  String   @db.Uuid
+  user_id     String?  @db.Uuid
+  author_name String
+  rating      Int
+  content     String
+  badge       String   @default("")
+  scope       String   @default("public")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
+
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@index([product_id, scope, updated_at(sort: Desc)])
+  @@map("product_reviews")
+}
+
+model Motivation {
+  id         String   @id @default(uuid()) @db.Uuid
+  authorName String   @default("Khách hàng")
+  image_url  String
+  rating     Int      @default(5)
+  content    String
+  badge      String   @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("motivations")
+}
+
+model Exercise {
+  id                 String   @id @default(uuid()) @db.Uuid
+  title              String
+  description        String   @default("")
+  video_url          String
+  video_url_no_pain  String   @default("")
+  video_url_mild     String   @default("")
+  video_url_moderate String   @default("")
+  video_url_severe   String   @default("")
+  thumbnail_url      String   @default("")
+  duration           Int      @default(0)
+  calories           Int      @default(0)
+  difficulty         String // "easy", "medium", "hard"
+  target_areas       String[]
+  category           String
+  tags               String[]
+  instructions       Json // e.g. [{"step": 1, "text": "..."}]
+  benefits           String[]
+  variations         Json     @default("{}")
+  is_pro             Boolean  @default(false)
+  order_index        Int      @default(0)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @default(now()) @updatedAt
+
+  plan_exercises PlanExercise[]
+  workout_logs   WorkoutLog[]
+
+  @@map("exercises")
+}
+
+model WorkoutPlan {
+  id            String   @id @default(uuid()) @db.Uuid
+  title         String
+  description   String   @default("")
+  duration_days Int
+  target_area   String
+  difficulty    String   @default("easy")
+  thumbnail_url String   @default("")
+  is_pro        Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+
+  exercises    PlanExercise[]
+  videos       Video[]
+  workout_logs WorkoutLog[]
+
+  @@map("workout_plans")
+}
+
+model PlanExercise {
+  id           String   @id @default(uuid()) @db.Uuid
+  plan_id      String   @db.Uuid
+  exercise_id  String   @db.Uuid
+  day_number   Int
+  order_in_day Int
+  created_at   DateTime @default(now())
+
+  plan     WorkoutPlan @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+  exercise Exercise    @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+
+  @@unique([plan_id, day_number, order_in_day])
+  @@map("plan_exercises")
+}
+
+model Video {
+  id              String   @id @default(uuid()) @db.Uuid
+  workout_plan_id String   @db.Uuid
+  order           Int
+  link            String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now()) @updatedAt
+
+  workout_plan WorkoutPlan @relation(fields: [workout_plan_id], references: [id], onDelete: Cascade)
+
+  @@unique([workout_plan_id, order])
+  @@map("videos")
+}
+
+model WorkoutLog {
+  id               String    @id @default(uuid()) @db.Uuid
+  user_id          String    @db.Uuid
+  exercise_id      String    @db.Uuid
+  plan_id          String?   @db.Uuid
+  day_number       Int?
+  started_at       DateTime  @default(now())
+  completed_at     DateTime?
+  is_completed     Boolean   @default(false)
+  skipped          Boolean   @default(false)
+  feedback         String?
+  duration_seconds Int       @default(0)
+  created_at       DateTime  @default(now())
+
+  user              User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  exercise          Exercise          @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+  plan              WorkoutPlan?      @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+  workout_feedbacks WorkoutFeedback[]
+
+  @@index([user_id, created_at(sort: Desc)])
+  @@index([user_id, plan_id])
+  @@map("workout_logs")
+}
+
+model WorkoutFeedback {
+  id             String   @id @default(uuid()) @db.Uuid
+  user_id        String   @db.Uuid
+  workout_log_id String   @db.Uuid
+  feeling        String?
+  skip_reason    String?
+  comment        String   @default("")
+  created_at     DateTime @default(now())
+
+  user        User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workout_log WorkoutLog @relation(fields: [workout_log_id], references: [id], onDelete: Cascade)
+
+  @@map("workout_feedbacks")
+}
+
+model PainLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  date       String // YYYY-MM-DD
+  pain_areas Json
+  pain_level Int      @default(0)
+  notes      String   @default("")
+  created_at DateTime @default(now())
+
+  user              User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  device_usage_logs DeviceUsageLog[]
+
+  @@unique([user_id, date])
+  @@map("pain_logs")
+}
+
+model WaterIntake {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  date       String // YYYY-MM-DD
+  cups       Int      @default(0)
+  goal       Int      @default(8)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, date])
+  @@map("water_intake")
+}
+
+model DailyRecommendation {
+  id               String   @id @default(uuid()) @db.Uuid
+  user_id          String   @db.Uuid
+  date             String // YYYY-MM-DD
+  nutrition_advice String
+  sport_advice     String
+  device_level     Int?
+  device_duration  Int?
+  created_at       DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, date])
+  @@map("daily_recommendations")
+}
+
+model DeviceUsageLog {
+  id               String    @id @default(uuid()) @db.Uuid
+  user_id          String    @db.Uuid
+  pain_log_id      String?   @db.Uuid
+  device_level     Int
+  duration_minutes Int
+  started_at       DateTime
+  completed_at     DateTime?
+  created_at       DateTime  @default(now())
+
+  user     User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  pain_log PainLog? @relation(fields: [pain_log_id], references: [id], onDelete: SetNull)
+
+  @@map("device_usage_logs")
+}
+
+model Posture {
+  id          String   @id @default(uuid()) @db.Uuid
+  category    String
+  image_url   String
+  image_urls  String[]
+  is_correct  Boolean  @default(true)
+  description String
+  sort_order  Int      @default(0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
+
+  @@map("postures")
+}
+
+model Library {
+  id         String   @id @default(uuid()) @db.Uuid
+  title      String   @default("")
+  category   String
+  coverImage String?
+  link       String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("library")
+}
+
+model PersonalizedPlanVideo {
+  id          String   @id @default(uuid()) @db.Uuid
+  video_group String   @default("regular")
+  title       String   @default("")
+  description String   @default("")
+  link        String
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
+
+  @@map("personalized_plan_videos")
+}
+
+model Tip {
+  id          String   @id @default(uuid()) @db.Uuid
+  type        String // "health", "nutrition"
+  title       String   @default("")
+  content     String
+  category    String   @default("general")
+  target_area String?
+  created_at  DateTime @default(now())
+
+  @@map("tips")
+}
+
+model KnowledgeBase {
+  id         String   @id @default(uuid()) @db.Uuid
+  title      String
+  content    String
+  category   String
+  tags       String[]
+  created_at DateTime @default(now())
+
+  @@map("knowledge_base")
+}
+
+model NotificationTemplate {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  label       String
+  title       String
+  body        String
+  hour        Int
+  minute      Int
+  is_active   Boolean  @default(true)
+  description String   @default("")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
+
+  @@map("notification_templates")
+}
+
+model NotificationUserOverride {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  key        String
+  title      String
+  body       String
+  hour       Int
+  minute     Int
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, key])
+  @@map("notification_user_overrides")
+}
+
+model NotificationDispatchLog {
+  id             String    @id @default(uuid()) @db.Uuid
+  user_id        String    @db.Uuid
+  key            String
+  delivery_slot  String
+  title          String
+  body           String
+  status         String    @default("pending")
+  sent_at        DateTime?
+  is_read        Boolean   @default(false)
+  read_at        DateTime?
+  expo_ticket_id String    @default("")
+  error_message  String    @default("")
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now()) @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, key, delivery_slot])
+  @@map("notification_dispatch_logs")
+}
+
+model NotificationToken {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @unique @db.Uuid
+  token      String
+  platform   String
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notification_tokens")
+}
+
+model AiPrompt {
+  id            String   @id @default(uuid()) @db.Uuid
+  prompt_type   String   @unique
+  system_prompt String
+  temperature   Float    @default(0.7)
+  max_tokens    Int      @default(1000)
+  model         String   @default("llama-3.3-70b-versatile")
+  is_active     Boolean  @default(true)
+  updated_at    DateTime @default(now()) @updatedAt
+
+  @@map("ai_prompts")
+}
+
+model ChatHistory {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  message    String
+  role       String
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at(sort: Desc)])
+  @@map("chat_histories")
+}
+
+model ActivationCode {
+  id         String    @id @default(uuid()) @db.Uuid
+  code       String    @unique
+  is_used    Boolean   @default(false)
+  used_by    String?   @db.Uuid
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+
+  user       User?     @relation(fields: [used_by], references: [id], onDelete: SetNull)
+
+  @@map("activation_codes")
+}

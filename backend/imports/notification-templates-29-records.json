@@ -1,0 +1,292 @@
+[
+  {
+    "key": "message_1_recovery_day_01",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 1",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 1 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_02",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 2",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 2 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_03",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 3",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 3 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_04",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 4",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 4 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_05",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 5",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 5 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_06",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 6",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 6 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_07",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 7",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 7 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_08",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 8",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 8 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_09",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 9",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 9 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_10",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 10",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 10 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_11",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 11",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 11 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_12",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 12",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 12 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_13",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 13",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 13 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_recovery_day_14",
+    "label": "Nhắc tập — Phục hồi chuyên sâu ngày 14",
+    "title": "Phục hồi chuyên sâu 🧘‍♀️",
+    "body": "Đã đến giờ thực hiện 14 ngày phục hồi chuyên sâu! Vào app và bắt đầu tập ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 14 của giai đoạn phục hồi chuyên sâu."
+  },
+  {
+    "key": "message_1_personalized_day_15",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 15",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 15 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_16",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 16",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 16 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_17",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 17",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 17 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_18",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 18",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 18 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_19",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 19",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 19 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_20",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 20",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 20 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_21",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 21",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 21 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_22",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 22",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 22 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_23",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 23",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 23 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_24",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 24",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 24 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_25",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 25",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 25 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_26",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 26",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 26 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_27",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 27",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 27 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_28",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 28",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 28 của lộ trình cá nhân hoá."
+  },
+  {
+    "key": "message_1_personalized_day_29",
+    "label": "Nhắc tập — Lộ trình cá nhân hoá ngày 29",
+    "title": "Lộ trình cá nhân hoá 🧘‍♀️",
+    "body": "Đã đến giờ tập lộ trình cá nhân hoá của bạn hôm nay! Vào app và bắt đầu ngay nào.",
+    "hour": 20,
+    "minute": 0,
+    "is_active": true,
+    "description": "Gửi ở ngày 29 của lộ trình cá nhân hoá."
+  }
+]
