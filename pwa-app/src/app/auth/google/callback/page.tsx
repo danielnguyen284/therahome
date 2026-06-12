@@ -27,10 +27,32 @@ function GoogleCallbackContent() {
     const completeLogin = async () => {
       try {
         const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-        const token = hashParams.get('token');
-        const oauthError = hashParams.get('error');
+        const token = hashParams.get('token') || searchParams.get('token');
+        const oauthError = hashParams.get('error') || searchParams.get('error');
 
-        window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+        // Check if user is already logged in (e.g. from previous concurrent mount)
+        const existingToken = storage.get<string>('therahome_token');
+        if (!token && !oauthError && existingToken) {
+          try {
+            const profile = await getProfile();
+            if (profile) {
+              if (isMounted) {
+                setUser(profile);
+                setStatus('success');
+                setMessage('Đăng nhập Google thành công!');
+                router.replace(profile.onboarding_completed ? '/home' : '/onboarding/splash');
+              }
+              return;
+            }
+          } catch {
+            storage.remove('therahome_token');
+            storage.remove('therahome_user');
+          }
+        }
+
+        if (token || oauthError) {
+          window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+        }
 
         if (oauthError) {
           throw new Error(oauthError);
