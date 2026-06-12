@@ -89,6 +89,11 @@ const sanitizeFrontendRedirect = (redirectTo) => {
   }
 };
 
+const isValidPreferredTime = (value) => {
+  if (typeof value !== 'string') return false;
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(value.trim());
+};
+
 const createRedirectOAuthClient = () => {
   if (!GOOGLE_WEB_CLIENT_ID || !GOOGLE_WEB_CLIENT_SECRET) {
     throw new Error('Missing GOOGLE_WEB_CLIENT_ID or GOOGLE_WEB_CLIENT_SECRET');
@@ -400,7 +405,7 @@ router.put('/profile', protect, async (req, res) => {
       'full_name', 'age', 'occupation', 'gender', 'height', 'weight',
       'target_weight', 'primary_goal', 'focus_area', 'limitations',
       'diet_type', 'pain_areas', 'symptoms', 'surgery_history',
-      'avatar_url', 'onboarding_completed', 'notifications_enabled',
+      'preferred_time', 'avatar_url', 'onboarding_completed', 'notifications_enabled',
       'personalized_plan_started_at', 'personalized_plan_completed_at',
       'personalized_plan_unlock_at'
     ];
@@ -416,9 +421,11 @@ router.put('/profile', protect, async (req, res) => {
       }
     });
 
-    // Users may choose their preferred reminder window during onboarding only.
-    if (req.body.preferred_time !== undefined && req.user?.onboarding_completed !== true) {
-      updates.preferred_time = req.body.preferred_time;
+    if (req.body.preferred_time !== undefined) {
+      if (!isValidPreferredTime(req.body.preferred_time)) {
+        return res.status(400).json({ error: 'preferred_time phải có định dạng HH:mm' });
+      }
+      updates.preferred_time = req.body.preferred_time.trim();
     }
 
     const updatedUser = await prisma.user.update({
@@ -447,7 +454,7 @@ router.post('/profile/sync', protect, async (req, res) => {
       'full_name', 'age', 'occupation', 'gender', 'height', 'weight',
       'target_weight', 'primary_goal', 'focus_area', 'limitations',
       'diet_type', 'pain_areas', 'symptoms', 'surgery_history',
-      'avatar_url', 'onboarding_completed', 'notifications_enabled',
+      'preferred_time', 'avatar_url', 'onboarding_completed', 'notifications_enabled',
       'personalized_plan_started_at', 'personalized_plan_completed_at',
       'personalized_plan_unlock_at',
     ];
@@ -462,6 +469,13 @@ router.post('/profile/sync', protect, async (req, res) => {
         }
       }
     });
+
+    if (req.body.preferred_time !== undefined) {
+      if (!isValidPreferredTime(req.body.preferred_time)) {
+        return res.status(400).json({ error: 'preferred_time phải có định dạng HH:mm' });
+      }
+      updates.preferred_time = req.body.preferred_time.trim();
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: req.user.id },

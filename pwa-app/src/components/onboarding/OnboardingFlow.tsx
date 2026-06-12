@@ -14,6 +14,8 @@ import {
   ArrowRight,
   Asterisk,
   Bed,
+  Bell,
+  BellOff,
   Bone,
   Brain,
   BrainCircuit,
@@ -360,12 +362,6 @@ const methodEffectiveness: Choice[] = [
   { id: 'inconvenient', label: 'Đi lại bất tiện', color: '#6366F1', icon: MapPin },
   { id: 'expensive', label: 'Chi phí cao', color: '#10B981', icon: DollarSign },
   { id: 'all', label: 'Tất cả', color: '#8B5CF6', icon: ClipboardList },
-];
-
-const timeOptions: Choice[] = [
-  { id: '08:00', label: 'Buổi sáng', desc: 'Khởi đầu ngày mới sảng khoái', color: '#F59E0B', icon: Sun },
-  { id: '20:05', label: 'Buổi tối', desc: 'Thư giãn cơ thể trước khi ngủ', color: '#4F46E5', icon: Moon, tag: 'Khuyên dùng' },
-  { id: '08:00,20:05', label: 'Cả 2', desc: 'Tối ưu hiệu quả phục hồi', color: '#10B981', icon: Sparkles },
 ];
 
 const occupationOptions: Choice[] = [
@@ -762,11 +758,24 @@ function TheraHomeScreen() {
           </p>
         </header>
         <div className="relative flex-1">
-          {labels.map((label) => (
-            <div key={label.text} className={`absolute rounded-2xl bg-white/20 px-4 py-3 text-sm font-extrabold shadow-lg ring-1 ring-white/35 backdrop-blur-md md:text-lg ${label.className}`}>
-              {label.text}
-            </div>
-          ))}
+          {labels.map((label, index) => {
+            const floatStyle = {
+              '--float-delay': `${index * 360}ms`,
+              '--shine-delay': `${900 + index * 520}ms`,
+              '--float-x': index % 2 === 0 ? '5px' : '-5px',
+              '--float-y': index % 2 === 0 ? '-9px' : '7px',
+            } as CSSProperties;
+
+            return (
+              <div
+                key={label.text}
+                className={`thera-floating-label absolute overflow-hidden rounded-2xl bg-white/20 px-4 py-3 text-sm font-extrabold shadow-lg ring-1 ring-white/35 backdrop-blur-md md:text-lg ${label.className}`}
+                style={floatStyle}
+              >
+                <span className="relative z-10">{label.text}</span>
+              </div>
+            );
+          })}
         </div>
         <PrimaryButton onClick={() => smoothPush(router, '/onboarding/exercise-time')} />
       </div>
@@ -808,19 +817,32 @@ function ExerciseTimeScreen() {
   const router = useRouter();
   const { draft, updateDraft, setCurrentStep } = useOnboardingStore();
   const initial = String(draft.preferred_time || '');
-  const [selected, setSelected] = useState(() => {
-    if (initial.includes(',')) return 'both';
-    if (initial.startsWith('08')) return 'morning';
-    if (initial) return 'evening';
-    return '';
-  });
-  const [morningTime, setMorningTime] = useState('08:00');
-  const [eveningTime, setEveningTime] = useState('20:05');
+  const initialTime = /^\d{2}:\d{2}$/.test(initial) ? initial : '20:00';
+  const getAvailabilityFromTime = (value: string) => {
+    const hour = Number(value.split(':')[0]);
+    if (Number.isNaN(hour)) return '';
+    if (hour < 11) return 'morning';
+    if (hour < 15) return 'noon';
+    if (hour < 18) return 'afternoon';
+    return 'evening';
+  };
+  const availabilityOptions = [
+    { id: 'morning', label: 'Buổi sáng', desc: 'Trước khi bắt đầu ngày mới', time: '08:00', color: '#F59E0B', icon: Sun },
+    { id: 'noon', label: 'Buổi trưa', desc: 'Nghỉ giữa ngày, tập nhanh nhẹ', time: '12:00', color: '#0EA5E9', icon: Clock },
+    { id: 'afternoon', label: 'Buổi chiều', desc: 'Sau giờ làm hoặc học tập', time: '17:30', color: '#10B981', icon: Sunset },
+    { id: 'evening', label: 'Buổi tối', desc: 'Thư giãn cơ thể trước khi ngủ', time: '20:00', color: '#4F46E5', icon: Moon },
+  ];
+  const [selectedAvailability, setSelectedAvailability] = useState(() => getAvailabilityFromTime(initialTime));
+  const [notificationsEnabled, setNotificationsEnabled] = useState(draft.notifications_enabled !== false);
+  const [reminderTime, setReminderTime] = useState(initialTime);
+  const timeIsValid = /^([01]\d|2[0-3]):[0-5]\d$/.test(reminderTime);
 
   const goNext = () => {
-    if (!selected) return;
-    const preferredTime = selected === 'morning' ? morningTime : selected === 'both' ? `${morningTime},${eveningTime}` : eveningTime;
-    updateDraft({ preferred_time: preferredTime });
+    if (!selectedAvailability || !timeIsValid) return;
+    updateDraft({
+      preferred_time: reminderTime,
+      notifications_enabled: notificationsEnabled,
+    });
     setCurrentStep('name');
     smoothPush(router, '/onboarding/name');
   };
@@ -831,37 +853,91 @@ function ExerciseTimeScreen() {
         step="exercise-time"
         icon={BellIcon}
         title="Bạn có thể dành thời gian lúc nào?"
-        subtitle="Hãy chọn khung thời gian bạn thấy thuận tiện nhất để duy trì thói quen tập luyện. Lịch thông báo sẽ do hệ thống thiết lập."
+        subtitle="Chọn khung giờ bạn thường rảnh để TheraHome cá nhân hóa lịch tập và nhắc bạn đúng thời điểm."
       />
-      <ChoiceList
-        choices={timeOptions.map((choice) => ({
-          ...choice,
-          id: choice.id === '08:00' ? 'morning' : choice.id === '08:00,20:05' ? 'both' : 'evening',
-        }))}
-        selected={selected ? [selected] : []}
-        onSelect={(choice) => setSelected(choice.id)}
-      />
-      {selected && (
-        <div className="mx-auto mb-5 w-full max-w-[620px] rounded-[24px] bg-white p-4 shadow-sm">
-          <div className="mb-4 flex items-center gap-2 text-sm font-extrabold text-slate-500">
-            <Clock className="h-5 w-5" />
-            Giờ nhắc nhở tập luyện
+      <div className="mx-auto mb-5 w-full max-w-[620px] rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-slate-100 md:p-5">
+        <div className="mb-5">
+          <div className="mb-3 flex items-center gap-2 text-sm font-extrabold text-slate-500">
+            <CalendarClock className="h-5 w-5 text-[#3B82F6]" />
+            Bạn rảnh tập lúc nào?
           </div>
-          {(selected === 'morning' || selected === 'both') && (
-            <label className="mb-3 flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-              <span className="font-bold text-slate-700">Buổi sáng</span>
-              <input value={morningTime} onChange={(event) => setMorningTime(event.target.value)} type="time" className="rounded-xl border border-slate-200 bg-white px-3 py-2 font-bold text-slate-900" />
-            </label>
-          )}
-          {(selected === 'evening' || selected === 'both') && (
-            <label className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-              <span className="font-bold text-slate-700">Buổi tối</span>
-              <input value={eveningTime} onChange={(event) => setEveningTime(event.target.value)} type="time" className="rounded-xl border border-slate-200 bg-white px-3 py-2 font-bold text-slate-900" />
-            </label>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {availabilityOptions.map((option) => {
+              const Icon = option.icon;
+              const isSelected = selectedAvailability === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedAvailability(option.id);
+                    setReminderTime(option.time);
+                  }}
+                  className={`flex min-w-0 items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all ${
+                    isSelected
+                      ? 'border-[#3B82F6] bg-[#3B82F6]/10 shadow-sm'
+                      : 'border-slate-100 bg-slate-50 hover:border-slate-200'
+                  }`}
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white" style={{ backgroundColor: option.color }}>
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className={`block text-base font-black ${isSelected ? 'text-[#3B82F6]' : 'text-slate-900'}`}>{option.label}</span>
+                    <span className="mt-1 block text-sm font-semibold leading-5 text-slate-500">{option.desc}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          role="switch"
+          aria-checked={notificationsEnabled}
+          onClick={() => setNotificationsEnabled((value) => !value)}
+          className={`flex w-full items-center justify-between gap-4 rounded-2xl px-4 py-4 text-left transition-all ${
+            notificationsEnabled ? 'bg-[#3B82F6]/10 text-slate-900' : 'bg-slate-50 text-slate-500'
+          }`}
+        >
+          <span className="flex items-center gap-3">
+            <span className={`flex h-11 w-11 items-center justify-center rounded-2xl ${notificationsEnabled ? 'bg-[#3B82F6] text-white' : 'bg-slate-200 text-slate-500'}`}>
+              {notificationsEnabled ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
+            </span>
+            <span>
+              <span className="block text-base font-black">Nhắc nhở tập luyện</span>
+              <span className="mt-1 block text-sm font-semibold text-slate-500">
+                {notificationsEnabled ? 'Đang bật, gửi 1 lần mỗi ngày' : 'Đang tắt thông báo tập luyện'}
+              </span>
+            </span>
+          </span>
+          <span className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${notificationsEnabled ? 'bg-[#3B82F6]' : 'bg-slate-300'}`}>
+            <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform ${notificationsEnabled ? 'translate-x-7' : 'translate-x-1'}`} />
+          </span>
+        </button>
+
+        <div className={`mt-4 rounded-2xl bg-slate-50 px-4 py-4 transition-opacity ${notificationsEnabled ? 'opacity-100' : 'opacity-45'}`}>
+          <div className="mb-3 flex items-center gap-2 text-sm font-extrabold text-slate-500">
+            <Clock className="h-5 w-5 text-[#3B82F6]" />
+            Chọn giờ thông báo
+          </div>
+          <label className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
+            <span className="font-bold text-slate-700">Giờ nhắc</span>
+            <input
+              value={reminderTime}
+              onChange={(event) => setReminderTime(event.target.value)}
+              type="time"
+              disabled={!notificationsEnabled}
+              className="min-w-[128px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-right font-bold text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+            />
+          </label>
+          {notificationsEnabled && !timeIsValid && (
+            <p className="mt-3 text-sm font-semibold text-red-500">Vui lòng chọn một giờ hợp lệ.</p>
           )}
         </div>
-      )}
-      <PrimaryButton disabled={!selected} onClick={goNext} />
+      </div>
+      <PrimaryButton disabled={!selectedAvailability || !timeIsValid} onClick={goNext} />
     </ScreenFrame>
   );
 }
@@ -917,7 +993,7 @@ function GenderScreen() {
 const fallbackReviews: Review[] = [
   {
     id: 'fallback-1',
-    authorName: 'Khách hàng',
+    authorName: 'Khánh An',
     image: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?q=80&w=1080',
     rating: 5,
     content: 'Điều tôi yêu thích nhất là ứng dụng giúp tôi duy trì thói quen tập luyện và cảm thấy tốt hơn mỗi ngày.',
@@ -939,9 +1015,42 @@ const fallbackReviews: Review[] = [
     content: 'Giao diện dễ dùng, bài tập được hướng dẫn chi tiết và phù hợp với sức khỏe của mình.',
     badge: 'Sống khỏe',
   },
+  {
+    id: 'fallback-4',
+    authorName: 'Quốc Bảo',
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1080',
+    rating: 5,
+    content: 'Từ ngày có TheraHome, tôi đã hình thành thói quen vận động lành mạnh và hết mỏi vai gáy.',
+    badge: 'Cải thiện 95%',
+  },
+  {
+    id: 'fallback-5',
+    authorName: 'Thu Trang',
+    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=1080',
+    rating: 5,
+    content: 'Lộ trình thiết kế riêng cực kỳ hiệu quả, tập 15 phút mỗi ngày vô cùng tiện lợi.',
+    badge: 'Tiện lợi & Hiệu quả',
+  },
 ];
 
-const getVisibleReviews = (reviews: Review[]) => (reviews.length > 0 ? reviews : fallbackReviews).filter((review) => review.content?.trim());
+const getVisibleReviews = (reviews: Review[]) => {
+  const dbReviews = reviews.filter((review) => review.content?.trim());
+  if (dbReviews.length >= 5) return dbReviews;
+  
+  // Merge database reviews with unique fallback reviews to guarantee at least 5
+  const merged = [...dbReviews];
+  for (let i = 0; i < fallbackReviews.length && merged.length < 5; i++) {
+    const isDuplicate = dbReviews.some(
+      (r) => 
+        r.content?.trim() === fallbackReviews[i].content || 
+        r.authorName === fallbackReviews[i].authorName
+    );
+    if (!isDuplicate) {
+      merged.push(fallbackReviews[i]);
+    }
+  }
+  return merged;
+};
 
 function DiscoveryScreen({ reviews }: { reviews: Review[] }) {
   const router = useRouter();
@@ -963,9 +1072,25 @@ function DiscoveryScreen({ reviews }: { reviews: Review[] }) {
               'left-[14%] bottom-[12%] h-24 w-24 md:h-28 md:w-28',
               'right-[16%] bottom-[10%] h-24 w-24 md:h-28 md:w-28',
             ];
+            const animations = [
+              'animate-float-1',
+              'animate-float-2',
+              'animate-float-3',
+              'animate-float-4',
+              'animate-float-5',
+            ];
             return (
-              <div key={review.id} className={`absolute overflow-hidden rounded-full bg-white p-1 shadow-xl ${positions[index] || positions[0]}`}>
-                <Image src={review.image || fallbackReviews[index % fallbackReviews.length].image} alt={review.authorName || 'Khách hàng'} width={160} height={160} className="h-full w-full rounded-full object-cover" />
+              <div
+                key={review.id}
+                className={`absolute overflow-hidden rounded-full bg-white p-1 shadow-xl transition-all duration-500 ${positions[index] || positions[0]} ${animations[index] || ''}`}
+              >
+                <Image
+                  src={review.image || fallbackReviews[index % fallbackReviews.length].image}
+                  alt={review.authorName || 'Khách hàng'}
+                  width={160}
+                  height={160}
+                  className="h-full w-full rounded-full object-cover"
+                />
               </div>
             );
           })}

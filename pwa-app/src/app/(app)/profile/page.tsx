@@ -80,7 +80,7 @@ export default function ProfilePage() {
     const nextVal = !notifEnabled;
     setNotifEnabled(nextVal);
     try {
-      await api.put('/users/profile', { notifications_enabled: nextVal });
+      await api.put('/auth/profile', { notifications_enabled: nextVal });
       if (user) {
         setUser({ ...user, notifications_enabled: nextVal });
       }

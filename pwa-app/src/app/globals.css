@@ -108,6 +108,32 @@ body {
   }
 }
 
+@keyframes theraLabelFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(var(--float-x, 0), var(--float-y, -8px), 0) scale(1.035);
+  }
+}
+
+@keyframes theraLabelShine {
+  0%,
+  42% {
+    transform: translateX(-145%) rotate(18deg);
+    opacity: 0;
+  }
+  58% {
+    opacity: 0.75;
+  }
+  78%,
+  100% {
+    transform: translateX(145%) rotate(18deg);
+    opacity: 0;
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -119,6 +145,61 @@ body {
 .onboarding-screen {
   animation: onboardingEnter 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
   view-transition-name: onboarding-screen;
+}
+
+.thera-floating-label {
+  animation: theraLabelFloat 4.6s ease-in-out infinite;
+  animation-delay: var(--float-delay, 0ms);
+  transform-origin: center;
+  will-change: transform;
+}
+
+.thera-floating-label::after {
+  animation: theraLabelShine 6.4s ease-in-out infinite;
+  animation-delay: var(--shine-delay, 0ms);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.42), transparent);
+  content: "";
+  inset: -45% -70%;
+  pointer-events: none;
+  position: absolute;
+}
+
+/* Floating animations for DiscoveryScreen avatars */
+@keyframes avatarFloat1 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes avatarFloat2 {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(8px) translateX(-4px); }
+}
+@keyframes avatarFloat3 {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-8px) translateX(5px); }
+}
+@keyframes avatarFloat4 {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(9px) translateX(3px); }
+}
+@keyframes avatarFloat5 {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-7px) translateX(-4px); }
+}
+
+.animate-float-1 {
+  animation: avatarFloat1 6s ease-in-out infinite;
+}
+.animate-float-2 {
+  animation: avatarFloat2 7s ease-in-out infinite;
+}
+.animate-float-3 {
+  animation: avatarFloat3 6.5s ease-in-out infinite;
+}
+.animate-float-4 {
+  animation: avatarFloat4 8s ease-in-out infinite;
+}
+.animate-float-5 {
+  animation: avatarFloat5 7.5s ease-in-out infinite;
 }
 
 ::view-transition-group(onboarding-screen) {
@@ -151,7 +232,14 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-slide-up,
+  .thera-floating-label,
+  .thera-floating-label::after,
   .onboarding-screen,
+  .animate-float-1,
+  .animate-float-2,
+  .animate-float-3,
+  .animate-float-4,
+  .animate-float-5,
   ::view-transition-old(onboarding-screen),
   ::view-transition-new(onboarding-screen) {
     animation-duration: 1ms !important;

@@ -285,6 +285,51 @@ async function seedData() {
   });
   console.log('✅ Products seeded (TheraNECK & TheraBACK)');
 
+  // 7. Seed motivations (onboarding reviews)
+  const motivationCount = await prisma.motivation.count();
+  if (motivationCount === 0) {
+    await prisma.motivation.createMany({
+      data: [
+        {
+          authorName: 'Khánh An',
+          image_url: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?q=80&w=1080',
+          rating: 5,
+          content: 'Điều tôi yêu thích nhất là ứng dụng giúp tôi duy trì thói quen tập luyện và cảm thấy tốt hơn mỗi ngày.',
+          badge: '-13kg',
+        },
+        {
+          authorName: 'Minh Tuấn',
+          image_url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=1080',
+          rating: 5,
+          content: 'Sau 2 tuần tập luyện theo lộ trình cá nhân hóa của TheraHome, cơn đau lưng của tôi giảm đáng kể.',
+          badge: 'Giảm 80% đau',
+        },
+        {
+          authorName: 'Hồng Hạnh',
+          image_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1080',
+          rating: 4,
+          content: 'Giao diện dễ dùng, bài tập được hướng dẫn chi tiết và phù hợp với sức khỏe của mình.',
+          badge: 'Sống khỏe',
+        },
+        {
+          authorName: 'Quốc Bảo',
+          image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1080',
+          rating: 5,
+          content: 'Từ ngày có TheraHome, tôi đã hình thành thói quen vận động lành mạnh và hết mỏi vai gáy.',
+          badge: 'Cải thiện 95%',
+        },
+        {
+          authorName: 'Thu Trang',
+          image_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=1080',
+          rating: 5,
+          content: 'Lộ trình thiết kế riêng cực kỳ hiệu quả, tập 15 phút mỗi ngày vô cùng tiện lợi.',
+          badge: 'Tiện lợi & Hiệu quả',
+        },
+      ],
+    });
+    console.log('✅ Motivations seeded (5 items)');
+  }
+
   console.log('\n🎉 Seed completed!');
   process.exit(0);
 }
