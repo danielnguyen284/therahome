@@ -27,7 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { name: 'Trang chủ', href: '/home', icon: Home },
-    { name: 'Dáng đứng', href: '/posture', icon: Activity },
+    { name: 'Tư thế đi', href: '/posture', icon: Activity },
     { name: 'Khám phá', href: '/explore', icon: Compass },
     { name: 'Thư viện', href: '/library', icon: BookOpen },
     { name: 'Hồ sơ', href: '/profile', icon: User },

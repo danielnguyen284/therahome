@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '../../../stores/authStore';
 import { api } from '../../../lib/api';
 import { format } from 'date-fns';
@@ -16,8 +16,10 @@ interface PainLog {
   notes?: string;
 }
 
-export default function PainInputPage() {
+function PainInputContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo');
   const { user } = useAuthStore();
   const [selectedAreas, setSelectedAreas] = useState<Record<string, number>>({});
   const [notes, setNotes] = useState('');
@@ -140,7 +142,7 @@ export default function PainInputPage() {
 
           {/* Notes */}
           <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-3">
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-350">
               Ghi chú triệu chứng thêm (nếu có)
             </label>
             <textarea
@@ -237,7 +239,13 @@ export default function PainInputPage() {
               Cập nhật lại
             </button>
             <button
-              onClick={() => router.push('/home')}
+              onClick={() => {
+                if (redirectTo) {
+                  router.push(redirectTo);
+                } else {
+                  router.push('/workout-plans');
+                }
+              }}
               className="flex-1 py-3 bg-indigo-600 text-white hover:bg-indigo-700 rounded-2xl font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-100 dark:shadow-none"
             >
               <Target className="w-4 h-4" />
@@ -256,5 +264,18 @@ export default function PainInputPage() {
       </div>
 
     </div>
+  );
+}
+
+export default function PainInputPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-[50vh]">
+        <div className="w-8 h-8 border-4 border-indigo-650 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-xs text-slate-500 mt-2">Đang tải...</p>
+      </div>
+    }>
+      <PainInputContent />
+    </Suspense>
   );
 }

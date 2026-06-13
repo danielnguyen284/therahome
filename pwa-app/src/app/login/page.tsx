@@ -115,13 +115,13 @@ function LoginForm() {
         setSuccessMsg('Đăng nhập và kích hoạt thiết bị thành công!');
       }
 
-      const targetUrl = (searchParams ? searchParams.get('redirectTo') : null) || (currentUser.is_pro ? '/home' : '/activate-device');
+      const targetUrl = (searchParams ? searchParams.get('redirectTo') : null) || '/home';
       window.setTimeout(() => {
         router.push(targetUrl);
       }, 1100);
     } catch (err) {
       console.error('Login post-processing error:', err);
-      const targetUrl = (searchParams ? searchParams.get('redirectTo') : null) || (currentUser.is_pro ? '/home' : '/activate-device');
+      const targetUrl = (searchParams ? searchParams.get('redirectTo') : null) || '/home';
       router.push(targetUrl);
     } finally {
       setIsMerging(false);

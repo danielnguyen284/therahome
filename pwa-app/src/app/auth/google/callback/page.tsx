@@ -40,7 +40,7 @@ function GoogleCallbackContent() {
                 setUser(profile);
                 setStatus('success');
                 setMessage('Đăng nhập Google thành công!');
-                const targetUrl = searchParams.get('redirectTo') || (profile.is_pro ? '/home' : '/activate-device');
+                const targetUrl = searchParams.get('redirectTo') || '/home';
                 router.replace(targetUrl);
               }
               return;
@@ -105,7 +105,7 @@ function GoogleCallbackContent() {
         setStatus('success');
         setMessage('Đăng nhập Google thành công!');
 
-        const targetUrl = searchParams.get('redirectTo') || (currentUser.is_pro ? '/home' : '/activate-device');
+        const targetUrl = searchParams.get('redirectTo') || '/home';
         window.setTimeout(() => {
           router.replace(targetUrl);
         }, 700);

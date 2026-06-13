@@ -6,6 +6,11 @@ import { useAuthStore } from '../../../stores/authStore';
 import { api } from '../../../lib/api';
 import { ArrowLeft, Play, Pause, RotateCcw, RotateCw, CheckCircle2, ChevronRight, Volume2 } from 'lucide-react';
 
+interface PainLog {
+  pain_areas?: Record<string, number>;
+  pain_level?: number;
+}
+
 interface Exercise {
   id: string;
   title: string;
@@ -52,6 +57,7 @@ export default function WorkoutSequencePage() {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [todayPainLog, setTodayPainLog] = useState<PainLog | null>(null);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -69,9 +75,21 @@ export default function WorkoutSequencePage() {
     if (!planId || !day) return;
     try {
       setLoading(true);
-      const res = await api.get<PlanExercise[]>(`/workout-plans/${planId}/exercises`);
-      const normalized = Array.isArray(res) ? res : [];
-      
+
+      // Fetch exercises + today pain log in parallel
+      const [exercisesRes, painRes] = await Promise.allSettled([
+        api.get<PlanExercise[]>(`/workout-plans/${planId}/exercises`),
+        api.get<PainLog>('/pain-logs/today'),
+      ]);
+
+      if (painRes.status === 'fulfilled' && painRes.value) {
+        setTodayPainLog(painRes.value);
+      }
+
+      const normalized = exercisesRes.status === 'fulfilled' && Array.isArray(exercisesRes.value)
+        ? exercisesRes.value
+        : [];
+
       const dayNum = parseInt(day);
       const dayExercises = normalized.filter((item) => item.day_number === dayNum);
       const exerciseList = dayExercises.map((item) => item.exercise).filter(Boolean);
@@ -101,18 +119,49 @@ export default function WorkoutSequencePage() {
 
   const currentExercise = exercises[0] ?? null;
 
-  // Simple pain-routing fallback inside PWA to resolve exercise video URL if no collection video
+  // Pain-routing: mirrors TheraEase-APP/src/utils/painRouting.ts logic
   const resolvedVideoUrl = useMemo(() => {
     if (dayVideoUrl) return dayVideoUrl;
     if (!currentExercise) return '';
 
-    // Standard fallback structure
+    const painVideos = currentExercise.video_urls_by_pain;
+    if (!painVideos) return currentExercise.video_url || '';
+
+    // Determine pain key from today's log
+    let painKey: 'no_pain' | 'mild' | 'moderate' | 'severe' = 'no_pain';
+    if (todayPainLog) {
+      const targetAreas = currentExercise.target_areas || [];
+      let maxPain = 0;
+
+      if (targetAreas.length > 0 && todayPainLog.pain_areas) {
+        // Use the max pain level among target areas
+        targetAreas.forEach((area) => {
+          const areaLevel = todayPainLog.pain_areas?.[area] ?? 0;
+          if (areaLevel > maxPain) maxPain = areaLevel;
+        });
+        // If no target area matched, fall back to overall pain_level
+        if (maxPain === 0) maxPain = todayPainLog.pain_level ?? 0;
+      } else {
+        maxPain = todayPainLog.pain_level ?? 0;
+      }
+
+      if (maxPain === 0) painKey = 'no_pain';
+      else if (maxPain <= 3) painKey = 'mild';
+      else if (maxPain <= 7) painKey = 'moderate';
+      else painKey = 'severe';
+    }
+
+    // Fallback chain: painKey -> mild -> moderate -> severe -> no_pain -> video_url
     return (
-      currentExercise.video_urls_by_pain?.no_pain ||
+      painVideos[painKey] ||
+      painVideos.mild ||
+      painVideos.moderate ||
+      painVideos.severe ||
+      painVideos.no_pain ||
       currentExercise.video_url ||
       ''
     );
-  }, [dayVideoUrl, currentExercise]);
+  }, [dayVideoUrl, currentExercise, todayPainLog]);
 
   const isYoutube = resolvedVideoUrl ? isYouTubeUrl(resolvedVideoUrl) : false;
   const youtubeId = isYoutube && resolvedVideoUrl ? extractYouTubeVideoId(resolvedVideoUrl) : null;

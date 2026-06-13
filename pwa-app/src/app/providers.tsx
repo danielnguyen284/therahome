@@ -134,19 +134,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
       // Bouncer for protected app pages
       router.push('/onboarding/splash');
     } else if (isAuthenticated && user) {
-      if (!user.is_pro) {
-        // Logged in but not activated -> redirect protected routes to activate-device
-        if (!isPublicRoute) {
-          router.push('/activate-device');
-        }
-      } else {
-        // Logged in and activated
-        if (pathname === '/login' || pathname === '/') {
-          router.push('/home');
-        } else if (user.onboarding_completed && pathname.startsWith('/onboarding')) {
-          // Completed users shouldn't re-onboard
-          router.push('/home');
-        }
+      // Logged in and normal/pro user
+      if (pathname === '/login' || pathname === '/') {
+        router.push('/home');
+      } else if (user.onboarding_completed && pathname.startsWith('/onboarding')) {
+        // Completed users shouldn't re-onboard
+        router.push('/home');
       }
     }
   }, [isLoading, isAuthenticated, user, pathname, router]);
