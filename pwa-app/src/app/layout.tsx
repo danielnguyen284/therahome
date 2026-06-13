@@ -17,6 +17,12 @@ export const metadata: Metadata = {
   title: "TheraHome",
   description: "Giải pháp chăm sóc sức khỏe và phục hồi vận động toàn diện tại nhà.",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: '/images/favicon.png', sizes: '64x64', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -42,7 +48,7 @@ export default function RootLayout({
       lang="vi"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 flex flex-col font-sans">
+      <body className="min-h-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 flex flex-col font-sans overflow-x-hidden">
         <Providers>{children}</Providers>
       </body>
     </html>

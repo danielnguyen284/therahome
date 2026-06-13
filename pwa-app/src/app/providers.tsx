@@ -3,8 +3,10 @@
 import React, { useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
+import { useThemeStore } from '../stores/themeStore';
 import { useRouter, usePathname } from 'next/navigation';
 import { api } from '../lib/api';
+import { storage } from '../lib/storage';
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -32,6 +34,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
     // Init state
     initializeAuth();
     loadDraft();
+
+    // Init Theme
+    if (typeof window !== 'undefined') {
+      const savedTheme = storage.get<'light' | 'dark'>('therahome_theme');
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+
+      if (initialTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      useThemeStore.getState().setTheme(initialTheme);
+    }
   }, [initializeAuth, loadDraft]);
 
   // Service Worker and Web Push registration
@@ -118,14 +134,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
       // Bouncer for protected app pages
       router.push('/onboarding/splash');
     } else if (isAuthenticated && user) {
-      if (pathname === '/login' || pathname === '/') {
-        router.push(user.onboarding_completed ? '/home' : '/onboarding/splash');
-      } else if (!user.onboarding_completed && !pathname.startsWith('/onboarding')) {
-        // Force uncompleted users to complete onboarding
-        router.push('/onboarding/splash');
-      } else if (user.onboarding_completed && pathname.startsWith('/onboarding')) {
-        // Completed users shouldn't re-onboard
-        router.push('/home');
+      if (!user.is_pro) {
+        // Logged in but not activated -> redirect protected routes to activate-device
+        if (!isPublicRoute) {
+          router.push('/activate-device');
+        }
+      } else {
+        // Logged in and activated
+        if (pathname === '/login' || pathname === '/') {
+          router.push('/home');
+        } else if (user.onboarding_completed && pathname.startsWith('/onboarding')) {
+          // Completed users shouldn't re-onboard
+          router.push('/home');
+        }
       }
     }
   }, [isLoading, isAuthenticated, user, pathname, router]);

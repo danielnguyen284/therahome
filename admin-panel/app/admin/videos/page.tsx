@@ -17,7 +17,8 @@ interface WorkoutPlan {
 interface VideoItemRaw {
   id?: string;
   _id?: string;
-  workout_plan_id: string | WorkoutPlan;
+  workout_plan_id: string;
+  workout_plan?: WorkoutPlan;
   order: number;
   link: string;
   created_at: string;
@@ -39,9 +40,8 @@ const initialForm = {
 };
 
 function normalizeVideo(item: VideoItemRaw): VideoItem {
-  const plan = item.workout_plan_id;
-  const planId = typeof plan === 'string' ? plan : plan?.id || '';
-  const planTitle = typeof plan === 'string' ? plan : plan?.title || 'Không rõ lộ trình';
+  const planId = item.workout_plan_id;
+  const planTitle = item.workout_plan?.title || 'Không rõ lộ trình';
 
   return {
     id: item.id || item._id || '',

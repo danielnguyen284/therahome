@@ -131,14 +131,14 @@ export default function PosturePage() {
       </div>
 
       {/* Category selector chips */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4">
         {groups.map((group) => {
           const isActive = group.category === selectedCategory;
           return (
             <button
               key={group.category}
               onClick={() => setSelectedCategory(group.category)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-semibold transition-all border ${
+              className={`shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-xs font-semibold transition-all border ${
                 isActive
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-100 dark:shadow-none'
                   : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-800'

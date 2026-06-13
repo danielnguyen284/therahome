@@ -6,15 +6,23 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Edit, Lock } from 'lucide-react';
 import Link from 'next/link';
 
+interface Video {
+  id: string;
+  order: number;
+  link: string;
+}
+
 interface WorkoutPlan {
   id: string;
   title: string;
   description: string;
   duration_days: number;
   target_area: string;
+  age_group: string;
   difficulty: string;
   is_pro: boolean;
   created_at: string;
+  videos?: Video[];
 }
 
 interface PlanExercise {
@@ -128,7 +136,7 @@ export default function ViewWorkoutPlanPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-200">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200">
           <div>
             <div className="text-sm text-slate-600 mb-1">Thời lượng</div>
             <div className="font-medium text-slate-900">
@@ -142,6 +150,16 @@ export default function ViewWorkoutPlanPage() {
               {plan.target_area === 'back' && 'Lưng'}
               {plan.target_area === 'shoulder' && 'Vai'}
               {plan.target_area === 'full_body' && 'Toàn thân'}
+              {plan.target_area === 'full' && 'Toàn thân'}
+              {!['neck', 'back', 'shoulder', 'full_body', 'full'].includes(plan.target_area) && plan.target_area}
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-slate-600 mb-1">Độ tuổi</div>
+            <div className="font-medium text-slate-900">
+              {plan.age_group === 'young' && 'Dưới 45'}
+              {plan.age_group === 'elder' && 'Từ 45+'}
+              {!['young', 'elder'].includes(plan.age_group) && plan.age_group}
             </div>
           </div>
           <div>
@@ -164,11 +182,17 @@ export default function ViewWorkoutPlanPage() {
         <div className="space-y-6">
           {Array.from({ length: plan.duration_days }, (_, i) => i + 1).map((day) => {
             const dayExercises = exercisesByDay[day] || [];
+            const dayVideo = plan.videos?.find(v => v.order === day);
             
             return (
               <div key={day} className="border border-slate-200 p-4">
-                <h4 className="font-medium text-slate-900 mb-3">
-                  Ngày {day}
+                <h4 className="font-medium text-slate-900 mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <span>Ngày {day}</span>
+                  {dayVideo?.link && (
+                    <span className="text-xs text-blue-600 font-normal">
+                      Video URL: <a href={dayVideo.link} target="_blank" rel="noopener noreferrer" className="hover:underline break-all">{dayVideo.link}</a>
+                    </span>
+                  )}
                 </h4>
 
                 {dayExercises.length === 0 ? (

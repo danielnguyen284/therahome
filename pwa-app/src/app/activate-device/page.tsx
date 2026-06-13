@@ -24,7 +24,7 @@ export default function ActivateDevicePage() {
 
   useEffect(() => {
     import('html5-qrcode').then((module) => {
-      setHtml5Qrcode(module.Html5Qrcode);
+      setHtml5Qrcode(() => module.Html5Qrcode);
     });
   }, []);
 
@@ -152,8 +152,8 @@ export default function ActivateDevicePage() {
         {/* Scanner Viewport */}
         {isScanning && (
           <div className="w-full flex flex-col items-center justify-center mb-6">
-            <div className="relative w-72 h-72 rounded-3xl overflow-hidden border-2 border-indigo-500 shadow-2xl shadow-indigo-500/10">
-              <div id="reader" className="w-full h-full object-cover"></div>
+            <div className="relative w-72 h-72 rounded-3xl overflow-hidden border-2 border-indigo-500 shadow-2xl shadow-indigo-500/10 bg-black">
+              <div id="reader" className="w-full h-full object-cover bg-black"></div>
               {/* Scan Reticle */}
               <div className="absolute inset-0 border-[28px] border-slate-950/30 flex items-center justify-center pointer-events-none">
                 <div className="w-full h-full border-2 border-dashed border-indigo-400 rounded-xl"></div>

@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../../stores/authStore';
 import { api } from '../../../lib/api';
 import { format } from 'date-fns';
-import { Target, AlertCircle, Sparkles, TrendingDown, TrendingUp, Minus, Check } from 'lucide-react';
+import { AlertCircle, Sparkles, TrendingDown, TrendingUp, Minus, Check, Target } from 'lucide-react';
+import BodyMap from '../../../components/BodyMap';
 
 interface PainLog {
   id?: string;
@@ -14,15 +15,6 @@ interface PainLog {
   pain_level: number;
   notes?: string;
 }
-
-const BODY_AREAS = [
-  { key: 'neck', label: 'Cổ vai gáy', desc: 'Đau mỏi cơ thang, mỏi cổ' },
-  { key: 'shoulder_left', label: 'Vai trái', desc: 'Đau khớp vai, bả vai trái' },
-  { key: 'shoulder_right', label: 'Vai phải', desc: 'Đau khớp vai, bả vai phải' },
-  { key: 'upper_back', label: 'Lưng trên', desc: 'Đau phần giáp cột sống ngực' },
-  { key: 'middle_back', label: 'Lưng giữa', desc: 'Đau mỏi thắt lưng giữa' },
-  { key: 'lower_back', label: 'Lưng dưới (Thắt lưng)', desc: 'Đau vùng thắt lưng L1-L5, xương chậu' },
-];
 
 export default function PainInputPage() {
   const router = useRouter();
@@ -58,7 +50,6 @@ export default function PainInputPage() {
     try {
       const history = await api.get<PainLog[]>('/pain-logs?days=7');
       if (history && history.length > 1) {
-        // First element is today, second is previous log
         const prev = history[1];
         setComparisonLog(prev);
         generateInsight(todayLog, prev);
@@ -94,22 +85,10 @@ export default function PainInputPage() {
     }
   };
 
-  const handleToggleArea = (key: string) => {
-    setSelectedAreas((prev) => {
-      const next = { ...prev };
-      if (next[key] !== undefined) {
-        delete next[key];
-      } else {
-        next[key] = 5; // Default intensity level
-      }
-      return next;
-    });
-  };
-
-  const handleSliderChange = (key: string, val: number) => {
+  const handleAreaPress = (area: string, level: number) => {
     setSelectedAreas((prev) => ({
       ...prev,
-      [key]: val,
+      [area]: level,
     }));
   };
 
@@ -120,7 +99,7 @@ export default function PainInputPage() {
     try {
       const values = Object.values(selectedAreas);
       const avgLevel = values.length > 0 ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0;
-      
+
       const payload = {
         date: format(new Date(), 'yyyy-MM-dd'),
         pain_areas: selectedAreas,
@@ -142,7 +121,7 @@ export default function PainInputPage() {
 
   return (
     <div className="w-full max-w-xl md:max-w-3xl lg:max-w-4xl mx-auto space-y-6">
-      
+
       {/* Title */}
       <div>
         <h1 className="text-xl md:text-2xl font-black text-slate-850 dark:text-white">Ghi nhận mức đau</h1>
@@ -152,88 +131,17 @@ export default function PainInputPage() {
       </div>
 
       {!successLog ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 md:p-6 shadow-sm space-y-6">
-          <h2 className="text-sm font-bold text-slate-700 dark:text-slate-355 flex items-center gap-2">
-            <Target className="w-4 h-4 text-indigo-600" />
-            1. Chọn vùng đau trên cơ thể
-          </h2>
+        <div className="space-y-6">
+          {/* Interactive Body Map */}
+          <BodyMap
+            selectedAreas={selectedAreas}
+            onAreaPress={handleAreaPress}
+          />
 
-          {/* Area Selector Toggles */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {BODY_AREAS.map((area) => {
-              const isSelected = selectedAreas[area.key] !== undefined;
-              return (
-                <button
-                  key={area.key}
-                  onClick={() => handleToggleArea(area.key)}
-                  className={`p-3.5 rounded-2xl text-left border transition-all flex justify-between items-center ${
-                    isSelected
-                      ? 'border-indigo-600 bg-indigo-50/30 dark:bg-indigo-950/20'
-                      : 'border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                  }`}
-                >
-                  <div>
-                    <h3 className={`text-xs font-bold ${isSelected ? 'text-indigo-600' : 'text-slate-700 dark:text-slate-300'}`}>
-                      {area.label}
-                    </h3>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{area.desc}</p>
-                  </div>
-                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
-                    isSelected ? 'bg-indigo-650 border-indigo-600 text-white' : 'border-slate-205 text-transparent'
-                  }`}>
-                    <Check className="w-3 h-3 stroke-[3]" />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Intensity sliders for selected areas */}
-          {Object.keys(selectedAreas).length > 0 && (
-            <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <h2 className="text-sm font-bold text-slate-750 dark:text-slate-300">
-                2. Mức độ đau của từng vùng (1-10)
-              </h2>
-
-              <div className="space-y-4">
-                {Object.keys(selectedAreas).map((key) => {
-                  const areaConfig = BODY_AREAS.find((a) => a.key === key);
-                  const currentLevel = selectedAreas[key];
-                  
-                  // Color indicators for intensity
-                  const getIntensityColorClass = (val: number) => {
-                    if (val <= 3) return 'text-emerald-500';
-                    if (val <= 6) return 'text-amber-500';
-                    return 'text-rose-500';
-                  };
-
-                  return (
-                    <div key={key} className="space-y-2">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-slate-700 dark:text-slate-300">{areaConfig?.label}</span>
-                        <span className={`font-bold ${getIntensityColorClass(currentLevel)}`}>
-                          Cấp độ {currentLevel}/10
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min="1"
-                        max="10"
-                        value={currentLevel}
-                        onChange={(e) => handleSliderChange(key, parseInt(e.target.value))}
-                        className="w-full accent-indigo-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Ghi chú thêm */}
-          <div className="space-y-2 pt-2">
+          {/* Notes */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-3">
             <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-              3. Ghi chú triệu chứng thêm (nếu có)
+              Ghi chú triệu chứng thêm (nếu có)
             </label>
             <textarea
               placeholder="VD: Cơn đau nhức mỏi nhói lên khi cúi gập đầu, tê bì ngón tay cái..."
@@ -269,7 +177,7 @@ export default function PainInputPage() {
           {/* Comparison Cards */}
           <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 md:p-6 shadow-sm space-y-6">
             <h3 className="text-sm font-bold text-slate-800 dark:text-white">So sánh với hôm qua</h3>
-            
+
             <div className="flex items-center justify-around">
               <div className="text-center">
                 <p className="text-[10px] font-bold text-slate-400">Hôm qua</p>

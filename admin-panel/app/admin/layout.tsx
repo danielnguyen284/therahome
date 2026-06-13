@@ -112,9 +112,9 @@ export default function AdminLayout({
 							<Image
 								src="/logo.png"
 								alt="TheraHome"
-								width={80}
-								height={80}
-								className="object-contain"
+								width={140}
+								height={44}
+								className="object-contain h-10 w-auto"
 							/>
 						</div>
 						<button

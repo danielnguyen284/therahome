@@ -28,9 +28,11 @@ export default function NewWorkoutPlanPage() {
   const [description, setDescription] = useState('');
   const [durationDays, setDurationDays] = useState(14);
   const [targetArea, setTargetArea] = useState('neck');
+  const [ageGroup, setAgeGroup] = useState('young');
   const [difficulty, setDifficulty] = useState('easy');
   const [isPro, setIsPro] = useState(false);
   const [dayExercises, setDayExercises] = useState<DayExercise[]>([]);
+  const [videoLinks, setVideoLinks] = useState<string[]>(Array(14).fill(''));
 
   useEffect(() => {
     loadExercises();
@@ -43,6 +45,18 @@ export default function NewWorkoutPlanPage() {
     } catch (error) {
       console.error('Load exercises error:', error);
     }
+  };
+
+  const handleDurationDaysChange = (newDays: number) => {
+    setDurationDays(newDays);
+    setVideoLinks(prev => {
+      const next = [...prev];
+      if (newDays > prev.length) {
+        return next.concat(Array(newDays - prev.length).fill(''));
+      } else {
+        return next.slice(0, newDays);
+      }
+    });
   };
 
   const addExerciseToDay = (day: number) => {
@@ -90,14 +104,21 @@ export default function NewWorkoutPlanPage() {
     setLoading(true);
 
     try {
+      const videosPayload = videoLinks.map((link, idx) => ({
+        order: idx + 1,
+        link: link.trim()
+      })).filter(v => v.link);
+
       // Create plan
       const plan = await api.post('/workout-plans', {
         title,
         description,
         duration_days: durationDays,
         target_area: targetArea,
+        age_group: ageGroup,
         difficulty,
         is_pro: isPro,
+        videos: videosPayload
       });
 
       // Create plan exercises
@@ -165,7 +186,7 @@ export default function NewWorkoutPlanPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Thời lượng (ngày) *
@@ -173,7 +194,7 @@ export default function NewWorkoutPlanPage() {
                 <input
                   type="number"
                   value={durationDays}
-                  onChange={(e) => setDurationDays(parseInt(e.target.value))}
+                  onChange={(e) => handleDurationDaysChange(parseInt(e.target.value) || 1)}
                   className="input"
                   min="1"
                   max="90"
@@ -195,6 +216,21 @@ export default function NewWorkoutPlanPage() {
                   <option value="back">Lưng</option>
                   <option value="shoulder">Vai</option>
                   <option value="full_body">Toàn thân</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Độ tuổi *
+                </label>
+                <select
+                  value={ageGroup}
+                  onChange={(e) => setAgeGroup(e.target.value)}
+                  className="input"
+                  required
+                >
+                  <option value="young">Dưới 45 tuổi</option>
+                  <option value="elder">Từ 45 tuổi trở lên</option>
                 </select>
               </div>
 
@@ -230,6 +266,33 @@ export default function NewWorkoutPlanPage() {
           </div>
         </div>
 
+        {/* Daily Video Links */}
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">
+            Link Video hàng ngày
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Array.from({ length: durationDays }, (_, i) => i + 1).map((day) => (
+              <div key={day} className="flex items-center gap-3">
+                <span className="text-sm font-medium text-slate-700 w-16">
+                  Ngày {day}:
+                </span>
+                <input
+                  type="url"
+                  placeholder="https://www.youtube.com/watch?..."
+                  value={videoLinks[day - 1] || ''}
+                  onChange={(e) => {
+                    const next = [...videoLinks];
+                    next[day - 1] = e.target.value;
+                    setVideoLinks(next);
+                  }}
+                  className="input flex-1"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Exercises by Day */}
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">
@@ -261,7 +324,6 @@ export default function NewWorkoutPlanPage() {
                   ) : (
                     <div className="space-y-2">
                       {dayExs.map((de) => {
-                        const exercise = exercises.find(e => e.id === de.exercise_id);
                         return (
                           <div key={de.order} className="flex items-center gap-3">
                             <span className="text-sm text-slate-600 w-8">

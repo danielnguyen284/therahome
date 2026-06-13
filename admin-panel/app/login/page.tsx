@@ -38,11 +38,12 @@ export default function LoginPage() {
         {/* Left - Branding */}
         <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-blue-600 to-blue-800 p-10 flex-col justify-center text-white">
           <div className="flex items-center gap-3 mb-12">
-            <div className="w-12 h-12 bg-white/10 backdrop-blur flex items-center justify-center border-2 border-white/20">
-              <Activity size={28} strokeWidth={2.5} />
+            <div className="w-12 h-12 shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-square-ai.png" alt="Thera AI Mark" className="w-full h-full object-contain brightness-0 invert" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">TheraHome</h1>
+              <h1 className="text-2xl font-bold">Thera AI</h1>
               <p className="text-blue-100 text-sm">Admin Panel</p>
             </div>
           </div>
@@ -60,11 +61,12 @@ export default function LoginPage() {
           <div className="max-w-md mx-auto w-full">
             {/* Mobile Logo */}
             <div className="lg:hidden flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 bg-blue-600 flex items-center justify-center">
-                <Activity size={24} className="text-white" strokeWidth={2.5} />
+              <div className="w-10 h-10 shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-square-ai.png" alt="Thera AI Mark" className="w-full h-full object-contain" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-900">TheraHome</h1>
+                <h1 className="text-xl font-bold text-slate-900">Thera AI</h1>
                 <p className="text-slate-600 text-xs">Admin Panel</p>
               </div>
             </div>

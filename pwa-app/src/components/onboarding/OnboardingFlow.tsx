@@ -64,7 +64,9 @@ import {
 } from 'lucide-react';
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import type { GuestProfile } from '../../stores/onboardingStore';
+import { useAuthStore } from '../../stores/authStore';
 import { api } from '../../lib/api';
+import { storage } from '../../lib/storage';
 
 interface Product {
   id: string;
@@ -158,6 +160,17 @@ const getTransitionDirection = (href: string) => {
 };
 
 const smoothPush = (router: RouterLike, href: string) => {
+  const isTargetingOnboarding = href.startsWith('/onboarding');
+
+  if (!isTargetingOnboarding) {
+    if (resolveTransition) {
+      resolveTransition();
+      resolveTransition = null;
+    }
+    router.push(href);
+    return;
+  }
+
   if (typeof document !== 'undefined' && document.startViewTransition) {
     document.documentElement.dataset.onboardingDirection = getTransitionDirection(href);
     
@@ -165,13 +178,18 @@ const smoothPush = (router: RouterLike, href: string) => {
       resolveTransition();
     }
     
+    let localResolve: (() => void) | null = null;
     const transitionPromise = new Promise<void>((resolve) => {
+      localResolve = resolve;
       resolveTransition = resolve;
     });
 
     const transition = document.startViewTransition(async () => {
       router.push(href);
       await transitionPromise;
+      if (resolveTransition === localResolve) {
+        resolveTransition = null;
+      }
     });
 
     transition.finished.finally(() => {
@@ -605,19 +623,49 @@ function TypewriterTagline({ text }: { text: string }) {
 
 function SplashScreen() {
   const router = useRouter();
+  const { loadDraft, clearDraft } = useOnboardingStore();
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [savedStep, setSavedStep] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const step = storage.get<string>('therahome_onboarding_step');
+      if (step && step !== 'splash' && step !== 'welcome' && (FLOW as readonly string[]).includes(step as StepId)) {
+        setSavedStep(step);
+        setShowResumeModal(true);
+      }
+    }
+  }, []);
+
+  const handleResume = () => {
+    loadDraft();
+    setShowResumeModal(false);
+    if (savedStep) {
+      smoothPush(router, `/onboarding/${savedStep}`);
+    }
+  };
+
+  const handleRestart = () => {
+    clearDraft();
+    setShowResumeModal(false);
+  };
+
   return (
     <main className="onboarding-screen relative min-h-screen overflow-hidden">
       <Image src="/images/background-login.png" alt="" fill priority className="object-cover" />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(18,24,38,0.04),rgba(18,24,38,0.16),rgba(18,24,38,0.38))]" />
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-7 pb-8 pt-10 md:max-w-[680px] md:px-12 md:pb-12 md:pt-12">
         <div className="flex flex-1 flex-col items-center justify-center pb-14">
-          <Image src="/images/therahome-logo-black.png" alt="TheraHome" width={420} height={132} priority className="h-auto w-[80%] max-w-[420px]" />
+          <Image src="/images/therahome-logo-white.png" alt="TheraHome" width={420} height={132} priority className="h-auto w-[80%] max-w-[420px] object-contain" />
           <TypewriterTagline text="Cải thiện tại nhà cùng AI" />
         </div>
         <div className="mx-auto w-full max-w-[430px] space-y-3 md:max-w-[480px]">
           <button
             type="button"
-            onClick={() => smoothPush(router, '/onboarding/welcome')}
+            onClick={() => {
+              clearDraft();
+              smoothPush(router, '/onboarding/welcome');
+            }}
             className="flex h-[60px] w-full items-center justify-center gap-2 rounded-full bg-[#3B82F6] text-xl font-extrabold text-white shadow-[0_12px_24px_rgba(59,130,246,0.38)] transition active:scale-[0.98]"
           >
             BẮT ĐẦU <ArrowRight className="h-6 w-6" />
@@ -630,6 +678,35 @@ function SplashScreen() {
           </Link>
         </div>
       </div>
+
+      {/* Resume Progress Modal */}
+      {showResumeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-[360px] rounded-3xl bg-white p-6 shadow-2xl text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#3B82F6]">
+              <ClipboardList className="h-8 w-8" />
+            </div>
+            <h3 className="text-xl font-extrabold text-slate-900">Tiếp tục khảo sát?</h3>
+            <p className="mt-2 text-sm font-medium leading-relaxed text-slate-500">
+              Bạn có một bản khảo sát đang thực hiện dở dang. Bạn có muốn tiếp tục hay bắt đầu lại?
+            </p>
+            <div className="mt-6 space-y-3">
+              <button
+                onClick={handleResume}
+                className="h-[50px] w-full rounded-2xl bg-[#3B82F6] hover:bg-blue-600 text-base font-bold text-white shadow-lg shadow-blue-100 transition"
+              >
+                Tiếp tục khảo sát
+              </button>
+              <button
+                onClick={handleRestart}
+                className="h-[48px] w-full rounded-2xl border border-slate-200 hover:bg-slate-50 text-base font-bold text-slate-600 transition"
+              >
+                Bắt đầu lại
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
@@ -1200,6 +1277,7 @@ const getRecommendedProduct = (focusArea: string, productsList: Product[]) => {
 function DeviceOfferScreen({ products }: { products: Product[] }) {
   const router = useRouter();
   const { draft } = useOnboardingStore();
+  const { isAuthenticated } = useAuthStore();
   const recommended = useMemo(() => getRecommendedProduct(draft.focus_area, products), [draft.focus_area, products]);
   const isBack = recommended.key === 'rung';
 
@@ -1219,7 +1297,7 @@ function DeviceOfferScreen({ products }: { products: Product[] }) {
           </p>
         </div>
         <div className="mx-auto w-full max-w-[430px] space-y-4 pb-2 md:max-w-[480px]">
-          <button onClick={() => smoothPush(router, '/login')} className="h-[58px] w-full rounded-full bg-[#3B82F6] text-xl font-bold text-white shadow-lg">Đã có</button>
+          <button onClick={() => smoothPush(router, isAuthenticated ? '/activate-device' : '/login?redirectTo=/activate-device')} className="h-[58px] w-full rounded-full bg-[#3B82F6] text-xl font-bold text-white shadow-lg">Tôi đã có thiết bị</button>
           <button onClick={() => smoothPush(router, '/onboarding/special-offer')} className="h-[58px] w-full rounded-full bg-red-500 text-xl font-bold text-white shadow-lg">Nhận ưu đãi</button>
         </div>
       </div>
@@ -1313,12 +1391,26 @@ function BestVersionScreen() {
   );
 }
 
+const PRODUCT_PRICES: Record<string, { original: string; offer: string; discount: string }> = {
+  rung: {
+    original: '1.690.000đ',
+    offer: '990.000đ',
+    discount: '41%',
+  },
+  ech: {
+    original: '1.490.000đ',
+    offer: '990.000đ',
+    discount: '34%',
+  }
+};
+
 function SpecialOfferScreen({ products }: { products: Product[] }) {
   const router = useRouter();
   const { draft } = useOnboardingStore();
+  const { isAuthenticated } = useAuthStore();
   const recommended = useMemo(() => getRecommendedProduct(draft.focus_area, products), [draft.focus_area, products]);
   const hasPurchaseLink = Boolean(recommended.purchase_link?.trim());
-  const isBack = recommended.key === 'rung';
+  const priceInfo = PRODUCT_PRICES[recommended.key] || PRODUCT_PRICES.rung;
 
   const handleOpenLink = () => {
     if (!hasPurchaseLink) return;
@@ -1326,30 +1418,109 @@ function SpecialOfferScreen({ products }: { products: Product[] }) {
   };
 
   return (
-    <ScreenFrame>
-      <div className="flex flex-1 flex-col text-center">
-        <div className="rounded-b-[42px] bg-red-500 px-6 py-8 text-white">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20">
-            <Gift className="h-7 w-7" />
-          </div>
-          <p className="text-sm font-bold uppercase tracking-widest">Ưu đãi đặc biệt</p>
-          <h1 className="mt-2 text-4xl font-black">{recommended.name}</h1>
-          <p className="mt-2 text-lg font-semibold">
-            {isBack ? 'Tối ưu hiệu quả cho lộ trình lưng & cột sống' : 'Tối ưu hiệu quả cho lộ trình cổ vai gáy'}
+    <ScreenFrame pale>
+      <style>{`
+        @keyframes shine-sweep {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        .animate-shine-sweep {
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+          background-size: 200% 100%;
+          animation: shine-sweep 4s infinite linear;
+        }
+      `}</style>
+
+      <div className="flex flex-1 flex-col items-center justify-between py-4 px-2 text-center">
+        {/* Header Title */}
+        <div className="mt-2">
+          <span className="inline-block px-3 py-1 rounded-full bg-blue-50 text-[11px] font-black uppercase tracking-widest text-[#3B82F6] ring-1 ring-blue-100">
+            Ưu đãi giới hạn
+          </span>
+          <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900">
+            Mở Khóa Lộ Trình Cùng <span className="text-red-500">{recommended.name}</span>
+          </h1>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-500 max-w-[280px] mx-auto">
+            Hỗ trợ cột sống, tăng hiệu quả giảm đau gấp 3 lần tại nhà
           </p>
         </div>
-        <div className="flex flex-1 items-center justify-center">
-          <Image src={recommended.image_url} alt={recommended.name} width={320} height={320} className="w-[80%] object-contain" />
+
+        {/* Unified Premium Voucher Ticket Card */}
+        <div className="my-auto w-full max-w-[340px] relative transition-transform duration-300 hover:scale-[1.02]">
+          {/* Outer glow aura */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 rounded-[32px] blur-xl opacity-45 animate-pulse" />
+          
+          {/* Main Ticket */}
+          <div className="relative bg-white rounded-[28px] overflow-hidden shadow-2xl border border-slate-100 flex flex-col">
+            
+            {/* Top portion (Product Showcase) */}
+            <div className="relative bg-gradient-to-b from-slate-50 to-white px-6 pt-6 pb-4 flex flex-col items-center">
+              {/* Product render */}
+              <div className="relative w-44 h-44 flex items-center justify-center mix-blend-multiply drop-shadow-md">
+                <Image 
+                  src={recommended.image_url} 
+                  alt={recommended.name} 
+                  fill
+                  priority
+                  className="object-contain"
+                />
+              </div>
+            </div>
+
+            {/* Dash line divider with tickets cutouts */}
+            <div className="relative flex items-center justify-center my-1 px-4">
+              {/* Left cutout circle mask */}
+              <div className="absolute -left-[14px] w-7 h-7 rounded-full bg-slate-100 border-r border-slate-200/50 shadow-inner z-10" />
+              {/* Right cutout circle mask */}
+              <div className="absolute -right-[14px] w-7 h-7 rounded-full bg-slate-100 border-l border-slate-200/50 shadow-inner z-10" />
+              {/* Dash line */}
+              <div className="w-full border-t-2 border-dashed border-slate-200" />
+            </div>
+
+            {/* Bottom portion (Offer Details & Price) */}
+            <div className="bg-gradient-to-tr from-rose-500 via-red-500 to-amber-500 px-6 py-6 text-white text-center relative overflow-hidden">
+              {/* Shine sweep overlay */}
+              <div className="absolute inset-0 animate-shine-sweep pointer-events-none" />
+
+              <span className="text-[11px] font-black tracking-widest bg-white/20 text-white px-3 py-1 rounded-full uppercase inline-block mb-2">
+                Quà tặng đi kèm lộ trình
+              </span>
+
+              <div className="text-5xl font-black tracking-tighter drop-shadow-md mb-2">
+                Giảm {priceInfo.discount}
+              </div>
+
+              {/* Price Details */}
+              <div className="flex flex-col items-center justify-center mt-2">
+                <div className="flex items-baseline justify-center gap-2">
+                  <span className="text-sm font-bold text-white/70 line-through">{priceInfo.original}</span>
+                  <span className="text-3xl font-extrabold tracking-tight">{priceInfo.offer}</span>
+                </div>
+                <p className="text-xs font-bold text-amber-200 mt-1">
+                  Dành riêng cho người mới
+                </p>
+              </div>
+            </div>
+
+          </div>
         </div>
-        <div className="mx-auto w-full max-w-[430px] space-y-3 md:max-w-[480px]">
+
+        {/* Action Buttons */}
+        <div className="w-full max-w-[430px] space-y-4 pb-2 md:max-w-[480px]">
           <button 
             onClick={handleOpenLink} 
             disabled={!hasPurchaseLink}
-            className="h-[58px] w-full rounded-full bg-red-500 text-xl font-black text-white disabled:bg-slate-300"
+            className="h-[58px] w-full rounded-full bg-red-500 hover:bg-red-600 active:scale-[0.99] text-xl font-black text-white shadow-xl shadow-red-200 disabled:bg-slate-300 disabled:shadow-none transition-all flex items-center justify-center gap-2"
           >
-            {hasPurchaseLink ? 'MỞ LINK ƯU ĐÃI' : 'CHƯA CÓ LINK ƯU ĐÃI'}
+            TIẾP TỤC
           </button>
-          <button onClick={() => smoothPush(router, '/login')} className="h-[58px] rounded-full bg-[#3B82F6] text-xl font-black text-white w-full">Tôi sẽ xem sau</button>
+          
+          <button 
+            onClick={() => smoothPush(router, isAuthenticated ? '/activate-device' : '/login?redirectTo=/activate-device')} 
+            className="h-[54px] w-full rounded-full border-2 border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.99] text-base font-extrabold text-slate-700 transition-all flex items-center justify-center gap-2"
+          >
+            Tôi đã có thiết bị (Kích hoạt ngay)
+          </button>
         </div>
       </div>
     </ScreenFrame>
@@ -1359,8 +1530,7 @@ function SpecialOfferScreen({ products }: { products: Product[] }) {
 export function OnboardingFlow({ step }: { step: string }) {
   const normalized = (FLOW as readonly string[]).includes(step) ? step : 'splash';
   const router = useRouter();
-  const { updateDraft, setCurrentStep } = useOnboardingStore();
-  const [products, setProducts] = useState<Product[]>([]);
+  const { updateDraft, setCurrentStep, products, setProducts } = useOnboardingStore();
   const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
@@ -1372,15 +1542,17 @@ export function OnboardingFlow({ step }: { step: string }) {
 
   useEffect(() => {
     let active = true;
-    void api.get<Product[]>('/products')
-      .then((data) => {
-        if (active && Array.isArray(data)) {
-          setProducts(data);
-        }
-      })
-      .catch((err) => {
-        console.warn('Failed to load products in onboarding:', err);
-      });
+    if (products.length === 0) {
+      void api.get<Product[]>('/products')
+        .then((data) => {
+          if (active && Array.isArray(data)) {
+            setProducts(data);
+          }
+        })
+        .catch((err) => {
+          console.warn('Failed to load products in onboarding:', err);
+        });
+    }
     void api.get<Review[]>('/reviews')
       .then((data) => {
         if (active && Array.isArray(data)) {
@@ -1427,7 +1599,7 @@ export function OnboardingFlow({ step }: { step: string }) {
       case 'name':
         return <TextInputScreen step={normalized} title="Chúng tôi gọi bạn là gì?" subtitle="Hãy cho chúng tôi biết tên của bạn để cá nhân hóa trải nghiệm." field="full_name" placeholder="Tên" />;
       case 'age':
-        return <TextInputScreen step={normalized} title="Bạn bao nhiêu tuổi?" subtitle="Độ tuổi giúp chúng tôi điều chỉnh cường độ bài tập phù hợp." field="age" type="number" placeholder="25" />;
+        return <TextInputScreen step={normalized} title="Bạn bao nhiêu tuổi?" subtitle="Độ tuổi giúp chúng tôi điều chỉnh cường độ bài tập phù hợp." field="age" type="number" placeholder="" />;
       case 'gender':
         return <GenderScreen />;
       case 'occupation':

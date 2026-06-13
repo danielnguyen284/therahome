@@ -335,7 +335,6 @@ export default function ProductAssessmentsScreen() {
                 </View>
 
                 <View style={styles.cardBody}>
-                  <Text style={styles.categoryText}>{product.key}</Text>
                   <Text style={styles.productName}>{product.name}</Text>
                   <Text style={styles.productDescription}>{resolveProductDescription(product)}</Text>
 

@@ -2,7 +2,9 @@ export type StorageKey =
   | 'therahome_token'
   | 'therahome_user'
   | 'theme_mode'
+  | 'therahome_theme'
   | 'therahome_onboarding_draft'
+  | 'therahome_onboarding_step'
   | 'notificationsEnabled';
 
 const isClient = typeof window !== 'undefined';
@@ -10,13 +12,13 @@ const isClient = typeof window !== 'undefined';
 export const storage = {
   get: <T>(key: StorageKey): T | null => {
     if (!isClient) return null;
+    const value = localStorage.getItem(key);
+    if (!value) return null;
     try {
-      const value = localStorage.getItem(key);
-      if (!value) return null;
       return JSON.parse(value) as T;
     } catch (e) {
-      console.error(`Error reading key "${key}" from localStorage:`, e);
-      return null;
+      // Fallback for plain string values that are not valid JSON (e.g. raw "light" or "dark")
+      return value as unknown as T;
     }
   },
 

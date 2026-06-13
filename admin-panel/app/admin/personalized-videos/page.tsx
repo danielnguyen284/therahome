@@ -175,7 +175,7 @@ export default function PersonalizedVideosPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Video Lộ Trình Cá Nhân Hoá</h1>
-          <p className="text-sm text-slate-500 mt-1">Collection riêng cho video dùng ở giai đoạn cá nhân hoá lộ trình.</p>
+          <p className="text-sm text-slate-500 mt-1">Danh sách video để hệ thống AI tự động đề xuất trong lộ trình cá nhân hóa 14 ngày.</p>
         </div>
         <button onClick={openCreateModal} className="btn btn-primary">
           <Plus size={20} className="inline mr-2" />
@@ -217,7 +217,7 @@ export default function PersonalizedVideosPage() {
               <th>Nhóm</th>
               <th>Tiêu đề</th>
               <th>Link</th>
-              <th>Trạng thái</th>
+              <th>AI Đề Xuất Tự Động</th>
               <th>Ngày tạo</th>
               <th>Thao tác</th>
             </tr>
@@ -244,7 +244,7 @@ export default function PersonalizedVideosPage() {
                 </td>
                 <td>
                   <span className={`badge ${item.is_active ? 'badge-success' : 'badge-secondary'}`}>
-                    {item.is_active ? 'Hoạt động' : 'Tắt'}
+                    {item.is_active ? 'Cho phép' : 'Không dùng'}
                   </span>
                 </td>
                 <td className="text-sm text-slate-600">
@@ -338,7 +338,7 @@ export default function PersonalizedVideosPage() {
               </div>
 
               <div className="flex items-center gap-3">
-                <label className="text-sm font-medium text-slate-700">Trạng thái hoạt động</label>
+                <label className="text-sm font-medium text-slate-700">Cho phép AI đề xuất tự động</label>
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, is_active: !formData.is_active })}
@@ -353,7 +353,7 @@ export default function PersonalizedVideosPage() {
                   />
                 </button>
                 <span className="text-sm text-slate-500">
-                  {formData.is_active ? 'Đang bật' : 'Đang tắt'}
+                  {formData.is_active ? 'Bật (AI có thể chọn)' : 'Tắt (AI bỏ qua)'}
                 </span>
               </div>
             </div>

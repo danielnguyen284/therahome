@@ -20,6 +20,7 @@ interface ProductReviewItem {
   author_name: string;
   rating: number;
   content: string;
+  badge?: string;
   scope?: 'public' | 'private';
   reviewer_type?: 'admin' | 'user';
   created_at: string;
@@ -31,6 +32,8 @@ interface ReviewForm {
   product_id: string;
   rating: number;
   content: string;
+  author_name: string;
+  badge: string;
 }
 
 const REVIEWABLE_KEYS = new Set(['ech', 'rung']);
@@ -39,6 +42,8 @@ const EMPTY_FORM: ReviewForm = {
   product_id: '',
   rating: 5,
   content: '',
+  author_name: 'TheraHome',
+  badge: '',
 };
 
 export default function ProductReviewsPage() {
@@ -115,6 +120,8 @@ export default function ProductReviewsPage() {
       product_id: item.product_id,
       rating: item.rating,
       content: item.content,
+      author_name: item.author_name || 'TheraHome',
+      badge: item.badge || '',
     });
     setShowModal(true);
   };
@@ -146,10 +153,10 @@ export default function ProductReviewsPage() {
       setSaving(true);
       const payload = {
         product_id: form.product_id,
-        author_name: 'TheraHome',
+        author_name: form.author_name.trim() || 'TheraHome',
         rating: Number(form.rating),
         content: form.content.trim(),
-        badge: '',
+        badge: form.badge.trim(),
       };
 
       if (editingItem) {
@@ -241,7 +248,6 @@ export default function ProductReviewsPage() {
                   <tr key={item.id}>
                     <td>
                       <div className="font-semibold text-slate-900">{product?.name || 'Không rõ sản phẩm'}</div>
-                      <div className="text-xs text-slate-500 uppercase">{product?.key || '--'}</div>
                     </td>
                     <td>
                       <span
@@ -333,7 +339,7 @@ export default function ProductReviewsPage() {
             >
               {reviewableProducts.map((product) => (
                 <option key={product.id} value={product.id}>
-                  {product.name} ({product.key})
+                  {product.name}
                 </option>
               ))}
             </select>
@@ -352,6 +358,28 @@ export default function ProductReviewsPage() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Tên người đánh giá</label>
+            <input
+              type="text"
+              value={form.author_name}
+              onChange={(event) => setForm((prev) => ({ ...prev, author_name: event.target.value }))}
+              className="input"
+              placeholder="Nhập tên người đánh giá..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Nhãn / Huy hiệu (không bắt buộc)</label>
+            <input
+              type="text"
+              value={form.badge}
+              onChange={(event) => setForm((prev) => ({ ...prev, badge: event.target.value }))}
+              className="input"
+              placeholder="Ví dụ: Đã mua hàng, Giảm 80% đau..."
+            />
           </div>
 
           <div>

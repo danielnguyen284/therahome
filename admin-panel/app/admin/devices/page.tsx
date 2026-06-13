@@ -29,7 +29,14 @@ function getDeviceLabel(item: string | { key?: string; name?: string; activation
     return DEVICES.find((device) => device.id === item)?.name || item;
   }
 
-  return item.name || item.key || item.activation_code || 'Thiết bị';
+  if (item.name) return item.name;
+  if (item.key) {
+    const key = item.key.toLowerCase();
+    if (key === 'ech') return 'TheraNECK';
+    if (key === 'rung') return 'TheraBACK';
+    return item.key;
+  }
+  return item.activation_code || 'Thiết bị';
 }
 
 function mapToDeviceId(item: OwnedDeviceValue) {

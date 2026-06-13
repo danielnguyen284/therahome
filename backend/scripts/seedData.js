@@ -200,41 +200,118 @@ async function seedData() {
   }
 
   // 4. Seed sample workout plan
-  const planCount = await prisma.workoutPlan.count();
-  if (planCount === 0) {
-    const plan = await prisma.workoutPlan.create({
-      data: {
-        title: 'Lộ trình trị liệu cổ 14 ngày',
-        description: 'Lộ trình tập luyện 14 ngày giúp giảm đau cổ hiệu quả cho người mới bắt đầu',
-        duration_days: 14,
-        target_area: 'neck',
-        difficulty: 'easy',
-        is_pro: false,
-      },
-    });
-    console.log('✅ Workout plan seeded');
+  await prisma.workoutPlan.deleteMany({});
+  console.log('🧹 Cleaned existing workout plans');
 
-    // Add exercises to plan
-    const exercises = await prisma.exercise.findMany({
-      where: { category: { in: ['neck', 'shoulder'] } },
-      take: 2,
-    });
+  const plansToSeed = [
+    {
+      title: 'Lộ trình Cổ vai gáy - Dưới 45 tuổi',
+      description: 'Bài tập giảm căng cơ, mỏi cổ vai gáy thiết kế riêng cho người trẻ dưới 45 tuổi',
+      duration_days: 14,
+      target_area: 'neck',
+      age_group: 'young',
+      difficulty: 'easy',
+      is_pro: false,
+    },
+    {
+      title: 'Lộ trình Cổ vai gáy - Từ 45 tuổi trở lên',
+      description: 'Bài tập nhẹ nhàng, tăng tính linh hoạt khớp cổ cho người trung và cao tuổi',
+      duration_days: 14,
+      target_area: 'neck',
+      age_group: 'elder',
+      difficulty: 'easy',
+      is_pro: false,
+    },
+    {
+      title: 'Lộ trình Lưng & cột sống - Dưới 45 tuổi',
+      description: 'Lộ trình củng cố cơ cốt lõi (core) và giảm đau mỏi lưng cho người trẻ dưới 45 tuổi',
+      duration_days: 14,
+      target_area: 'back',
+      age_group: 'young',
+      difficulty: 'medium',
+      is_pro: false,
+    },
+    {
+      title: 'Lộ trình Lưng & cột sống - Từ 45 tuổi trở lên',
+      description: 'Bài tập kéo giãn nhẹ nhàng và tăng độ vững chắc cột sống cho người trên 45 tuổi',
+      duration_days: 14,
+      target_area: 'back',
+      age_group: 'elder',
+      difficulty: 'easy',
+      is_pro: false,
+    },
+    {
+      title: 'Lộ trình Toàn thân - Dưới 45 tuổi',
+      description: 'Lộ trình phục hồi toàn diện, cải thiện tư thế và tăng sức mạnh cơ bắp cho người dưới 45 tuổi',
+      duration_days: 14,
+      target_area: 'full',
+      age_group: 'young',
+      difficulty: 'medium',
+      is_pro: false,
+    },
+    {
+      title: 'Lộ trình Toàn thân - Từ 45 tuổi trở lên',
+      description: 'Chương trình vận động toàn thân nhẹ nhàng, hỗ trợ lưu thông khí huyết cho người trên 45 tuổi',
+      duration_days: 14,
+      target_area: 'full',
+      age_group: 'elder',
+      difficulty: 'easy',
+      is_pro: false,
+    },
+  ];
 
-    if (exercises.length > 0) {
-      const planExercises = [];
-      for (let day = 1; day <= 14; day++) {
-        exercises.forEach((ex, idx) => {
-          planExercises.push({
-            plan_id: plan.id,
-            exercise_id: ex.id,
-            day_number: day,
-            order_in_day: idx + 1,
-          });
+  const allExercises = await prisma.exercise.findMany();
+
+  for (const planData of plansToSeed) {
+    const plan = await prisma.workoutPlan.create({ data: planData });
+    console.log(`✅ Created plan: ${plan.title}`);
+
+    let targetExercises = [];
+    if (plan.target_area === 'neck') {
+      targetExercises = allExercises.filter(ex => ex.category === 'neck' || ex.category === 'shoulder');
+    } else if (plan.target_area === 'back') {
+      targetExercises = allExercises.filter(ex => ex.category === 'upper_back' || ex.category === 'middle_back' || ex.category === 'lower_back');
+    } else {
+      targetExercises = allExercises;
+    }
+
+    if (targetExercises.length === 0) {
+      targetExercises = allExercises;
+    }
+
+    const planExercises = [];
+    const planVideos = [];
+
+    for (let day = 1; day <= 14; day++) {
+      const ex1 = targetExercises[day % targetExercises.length];
+      const ex2 = targetExercises[(day + 1) % targetExercises.length];
+
+      planExercises.push({
+        plan_id: plan.id,
+        exercise_id: ex1.id,
+        day_number: day,
+        order_in_day: 1,
+      });
+
+      if (ex1.id !== ex2.id) {
+        planExercises.push({
+          plan_id: plan.id,
+          exercise_id: ex2.id,
+          day_number: day,
+          order_in_day: 2,
         });
       }
-      await prisma.planExercise.createMany({ data: planExercises });
-      console.log('✅ Plan exercises seeded');
+
+      planVideos.push({
+        workout_plan_id: plan.id,
+        order: day,
+        link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      });
     }
+
+    await prisma.planExercise.createMany({ data: planExercises });
+    await prisma.video.createMany({ data: planVideos });
+    console.log(`   - Seeded exercises & 14 daily videos for ${plan.title}`);
   }
 
   // 5. Seed knowledge base

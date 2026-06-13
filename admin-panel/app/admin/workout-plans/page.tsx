@@ -14,6 +14,7 @@ interface WorkoutPlan {
   description: string;
   duration_days: number;
   target_area: string;
+  age_group: string;
   difficulty: string;
   is_pro: boolean;
   created_at: string;
@@ -129,6 +130,9 @@ export default function WorkoutPlansPage() {
                 Vùng
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase">
+                Độ tuổi
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase">
                 Độ khó
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase">
@@ -142,7 +146,7 @@ export default function WorkoutPlansPage() {
           <tbody className="divide-y divide-slate-200">
             {filteredPlans.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                   Không có workout plan nào
                 </td>
               </tr>
@@ -168,8 +172,14 @@ export default function WorkoutPlansPage() {
                       {plan.target_area === 'arm' && 'Tay'}
                       {plan.target_area === 'leg' && 'Chân'}
                       {plan.target_area === 'full_body' && 'Toàn thân'}
-                      {!['neck', 'shoulder', 'upper_back', 'middle_back', 'lower_back', 'arm', 'leg', 'full_body'].includes(plan.target_area) && plan.target_area}
+                      {plan.target_area === 'full' && 'Toàn thân'}
+                      {!['neck', 'shoulder', 'upper_back', 'middle_back', 'lower_back', 'arm', 'leg', 'full_body', 'full'].includes(plan.target_area) && plan.target_area}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-700">
+                    {plan.age_group === 'young' && 'Dưới 45'}
+                    {plan.age_group === 'elder' && 'Từ 45+'}
+                    {!['young', 'elder'].includes(plan.age_group) && plan.age_group}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-700">
                     {plan.difficulty === 'easy' && 'Dễ'}

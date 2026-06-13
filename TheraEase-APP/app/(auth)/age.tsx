@@ -105,7 +105,7 @@ export default function AgeScreen() {
 												if (val.length > 0) Haptics.selectionAsync();
 											}
 										}}
-										placeholder="25"
+										placeholder=""
 										placeholderTextColor="#D1D5DB"
 										keyboardType="number-pad"
 										maxLength={3}

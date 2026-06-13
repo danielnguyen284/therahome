@@ -118,8 +118,12 @@ router.post('/activate', protect, async (req, res) => {
       include: { product: true },
     });
 
-    if (!productInstance || !productInstance.is_activated) {
-      return res.status(400).json({ error: 'Mã không hợp lệ hoặc chưa được kích hoạt' });
+    if (!productInstance) {
+      return res.status(400).json({ error: 'Mã kích hoạt không hợp lệ' });
+    }
+
+    if (productInstance.is_activated) {
+      return res.status(400).json({ error: 'Mã kích hoạt này đã được sử dụng' });
     }
 
     const product = productInstance.product;
@@ -149,6 +153,7 @@ router.post('/activate', protect, async (req, res) => {
     await prisma.productInstance.update({
       where: { id: productInstance.id },
       data: {
+        is_activated: true,
         activated_by: req.user.id,
         activated_at: new Date(),
       },
@@ -209,8 +214,12 @@ router.post('/validate', async (req, res) => {
       include: { product: true },
     });
 
-    if (!productInstance || !productInstance.is_activated) {
-      return res.status(400).json({ error: 'Mã không hợp lệ hoặc chưa được kích hoạt' });
+    if (!productInstance) {
+      return res.status(400).json({ error: 'Mã kích hoạt không hợp lệ' });
+    }
+
+    if (productInstance.is_activated) {
+      return res.status(400).json({ error: 'Mã kích hoạt này đã được sử dụng' });
     }
 
     const product = productInstance.product;

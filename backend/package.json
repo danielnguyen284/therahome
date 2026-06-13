@@ -4,7 +4,7 @@
   "description": "TheraHome Backend API - MongoDB + Express.js",
   "main": "server.js",
   "scripts": {
-    "dev": "node server.js",
+    "dev": "node --watch server.js",
     "start": "node server.js",
     "seed": "node scripts/seedData.js",
     "migrate:onboarding": "node scripts/migrateOnboardingCompleted.js"

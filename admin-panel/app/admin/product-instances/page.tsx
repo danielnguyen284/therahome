@@ -7,23 +7,25 @@ import toast from "react-hot-toast";
 import { QRCodeSVG } from "qrcode.react";
 
 interface Product {
-	id: string;
+	id?: string;
+	_id?: string;
 	name: string;
 	key: string;
 }
 
 interface ProductInstance {
-	_id: string;
-	product_id: {
-		_id: string;
+	id: string;
+	_id?: string;
+	product_id: string;
+	product?: {
+		id: string;
 		name: string;
 		key: string;
 	};
 	activation_code: string;
 	is_activated: boolean;
-	activated_by: {
-		_id: string;
-		name: string;
+	user?: {
+		full_name: string;
 		email: string;
 	} | null;
 	activated_at: string | null;
@@ -131,7 +133,7 @@ export default function ProductInstancesPage() {
 	const handleDownloadQR = (instance: ProductInstance) => {
 		setDownloadData({
 			code: instance.activation_code,
-			name: instance.product_id.key,
+			name: instance.product?.key || instance.product?.name || "Product",
 		});
 
 		// Allow React state to update before downloading
@@ -161,7 +163,7 @@ export default function ProductInstancesPage() {
 						);
 
 						const a = document.createElement("a");
-						a.download = `QR_${strLimit(instance.product_id.key, 10)}_${instance.activation_code}.png`;
+						a.download = `QR_${strLimit(instance.product?.key || instance.product?.name || "Product", 10)}_${instance.activation_code}.png`;
 						a.href = canvas.toDataURL("image/png");
 						a.click();
 					}
@@ -173,7 +175,8 @@ export default function ProductInstancesPage() {
 		}, 150);
 	};
 
-	const strLimit = (str: string, len: number) => {
+	const strLimit = (str: string | null | undefined, len: number) => {
+		if (!str) return "";
 		return str.length > len ? str.substring(0, len) : str;
 	};
 
@@ -204,8 +207,8 @@ export default function ProductInstancesPage() {
 						>
 							<option value="">Tất cả sản phẩm</option>
 							{products.map((p) => (
-								<option key={p.id} value={p.id}>
-									{p.name} ({p.key})
+								<option key={p.id || p._id} value={p.id || p._id}>
+									{p.name}
 								</option>
 							))}
 						</select>
@@ -268,17 +271,17 @@ export default function ProductInstancesPage() {
 								</tr>
 							) : (
 								instances.map((item) => (
-									<tr key={item._id} className="hover:bg-slate-50">
+									<tr key={item.id || item._id} className="hover:bg-slate-50">
 										<td className="px-6 py-4 text-sm font-mono text-slate-900 font-semibold whitespace-nowrap">
 											{item.activation_code}
 										</td>
 										<td className="px-6 py-4 text-sm text-slate-700 font-medium">
-											{item.product_id?.name || "N/A"}
+											{item.product?.name || "N/A"}
 										</td>
 										<td className="px-6 py-4">
 											<button
 												onClick={() =>
-													handleToggleStatus(item._id, item.is_activated)
+													handleToggleStatus(item.id || item._id || "", item.is_activated)
 												}
 												className={`px-3 py-1.5 text-xs font-semibold rounded-full min-w-[100px] transition ${
 													item.is_activated
@@ -290,13 +293,13 @@ export default function ProductInstancesPage() {
 											</button>
 										</td>
 										<td className="px-6 py-4 text-sm text-slate-600">
-											{item.activated_by ? (
+											{item.user ? (
 												<div>
 													<div className="font-medium text-slate-900">
-														{item.activated_by.name}
+														{item.user.full_name}
 													</div>
 													<div className="text-xs text-slate-500">
-														{item.activated_by.email}
+														{item.user.email}
 													</div>
 													{item.activated_at && (
 														<div className="text-xs text-slate-400 mt-1">
@@ -321,7 +324,7 @@ export default function ProductInstancesPage() {
 												</button>
 												<button
 													title="Xóa"
-													onClick={() => handleDelete(item._id)}
+													onClick={() => handleDelete(item.id || item._id || "")}
 													className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
 												>
 													<Trash2 size={18} />
@@ -373,8 +376,8 @@ export default function ProductInstancesPage() {
 										-- Chọn sản phẩm --
 									</option>
 									{products.map((p) => (
-										<option key={p.id} value={p.id}>
-											{p.name} ({p.key})
+										<option key={p.id || p._id} value={p.id || p._id}>
+											{p.name}
 										</option>
 									))}
 								</select>

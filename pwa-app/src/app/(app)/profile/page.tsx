@@ -185,7 +185,7 @@ export default function ProfilePage() {
 
         {/* Device Management link */}
         <button
-          onClick={() => router.push('/explore')}
+          onClick={() => router.push('/activate-device')}
           className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-950 transition-all rounded-2xl text-left"
         >
           <div className="flex items-center gap-3">

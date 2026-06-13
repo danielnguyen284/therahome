@@ -8,6 +8,8 @@ router.get('/', protect, async (req, res) => {
   try {
     const where = {};
     if (req.query.is_pro !== undefined) where.is_pro = req.query.is_pro === 'true';
+    if (req.query.target_area) where.target_area = req.query.target_area;
+    if (req.query.age_group) where.age_group = req.query.age_group;
     const plans = await prisma.workoutPlan.findMany({
       where,
       orderBy: { duration_days: 'asc' },
@@ -21,7 +23,14 @@ router.get('/', protect, async (req, res) => {
 // GET /api/workout-plans/:id
 router.get('/:id', protect, async (req, res) => {
   try {
-    const plan = await prisma.workoutPlan.findUnique({ where: { id: req.params.id } });
+    const plan = await prisma.workoutPlan.findUnique({
+      where: { id: req.params.id },
+      include: {
+        videos: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
     if (!plan) return res.status(404).json({ error: 'Không tìm thấy plan' });
     res.json(plan);
   } catch (error) {
@@ -32,9 +41,32 @@ router.get('/:id', protect, async (req, res) => {
 // POST /api/workout-plans
 router.post('/', protect, async (req, res) => {
   try {
-    const plan = await prisma.workoutPlan.create({ data: req.body });
+    const { title, description, duration_days, target_area, difficulty, is_pro, age_group, videos } = req.body;
+    const plan = await prisma.workoutPlan.create({
+      data: {
+        title,
+        description: description || '',
+        duration_days: Number(duration_days),
+        target_area,
+        difficulty: difficulty || 'easy',
+        is_pro: !!is_pro,
+        age_group: age_group || 'young',
+      }
+    });
+
+    if (videos && Array.isArray(videos)) {
+      await prisma.video.createMany({
+        data: videos.map(v => ({
+          workout_plan_id: plan.id,
+          order: Number(v.order),
+          link: typeof v.link === 'string' ? v.link.trim() : '',
+        })).filter(v => v.link),
+      });
+    }
+
     res.status(201).json(plan);
   } catch (error) {
+    console.error('Create plan error:', error);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });
@@ -42,13 +74,38 @@ router.post('/', protect, async (req, res) => {
 // PUT /api/workout-plans/:id
 router.put('/:id', protect, async (req, res) => {
   try {
+    const { title, description, duration_days, target_area, difficulty, is_pro, age_group, videos } = req.body;
     const plan = await prisma.workoutPlan.update({
       where: { id: req.params.id },
-      data: req.body,
+      data: {
+        title,
+        description: description !== undefined ? description : undefined,
+        duration_days: duration_days !== undefined ? Number(duration_days) : undefined,
+        target_area,
+        difficulty,
+        is_pro: is_pro !== undefined ? !!is_pro : undefined,
+        age_group,
+      },
     });
+
+    if (videos && Array.isArray(videos)) {
+      await prisma.video.deleteMany({
+        where: { workout_plan_id: req.params.id },
+      });
+
+      await prisma.video.createMany({
+        data: videos.map(v => ({
+          workout_plan_id: req.params.id,
+          order: Number(v.order),
+          link: typeof v.link === 'string' ? v.link.trim() : '',
+        })).filter(v => v.link),
+      });
+    }
+
     res.json(plan);
   } catch (error) {
     if (error.code === 'P2025') return res.status(404).json({ error: 'Không tìm thấy plan' });
+    console.error('Update plan error:', error);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });

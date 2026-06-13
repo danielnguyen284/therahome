@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../../stores/authStore';
 import { api } from '../../../lib/api';
 import { chatWithAssistant } from '../../../lib/groq';
-import { Bot, User as UserIcon, Send, Sparkles, Trash2, ArrowRight } from 'lucide-react';
+import { Bot, User as UserIcon, Send, Sparkles, Trash2, ArrowRight, X } from 'lucide-react';
 
 interface Message {
   id?: string;
@@ -22,6 +23,7 @@ const SUGGESTIONS = [
 
 export default function ChatPage() {
   const { user } = useAuthStore();
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputVal, setInputVal] = useState('');
   const [loading, setLoading] = useState(false);
@@ -134,8 +136,12 @@ export default function ChatPage() {
       {/* Chat Header */}
       <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-            <Bot className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0 bg-slate-50 relative">
+            <img
+              src="/images/xin-chao-toi-la-tro-ly.png"
+              alt="Trợ lý bác sĩ"
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
             <h2 className="font-bold text-slate-850 dark:text-white text-xs md:text-sm">Trợ lý TheraHome</h2>
@@ -146,15 +152,31 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {messages.length > 0 && (
+        <div className="flex items-center gap-1.5">
+          {messages.length > 0 && (
+            <button
+              onClick={handleClearHistory}
+              className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl transition-all"
+              title="Xóa cuộc trò chuyện"
+            >
+              <Trash2 className="w-4.5 h-4.5" />
+            </button>
+          )}
           <button
-            onClick={handleClearHistory}
-            className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl transition-all"
-            title="Xóa cuộc trò chuyện"
+            onClick={() => {
+              if (window.history.length > 1) {
+                router.back();
+              } else {
+                router.push('/home');
+              }
+            }}
+            className="p-2 text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
+            title="Đóng chat"
+            aria-label="Đóng chat"
           >
-            <Trash2 className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
-        )}
+        </div>
       </div>
 
       {/* Message Viewport */}
@@ -163,28 +185,38 @@ export default function ChatPage() {
         className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/30 dark:bg-slate-950/10"
       >
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center max-w-sm md:max-w-xl mx-auto px-4 py-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center mb-4 shadow-lg shadow-indigo-150">
-              <Sparkles className="w-6 h-6 fill-white" />
+          <div className="space-y-6 py-2">
+            {/* Assistant Welcome Bubble */}
+            <div className="flex gap-3 max-w-[85%] md:max-w-[72%] mr-auto">
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0 bg-slate-50">
+                <img
+                  src="/images/xin-chao-toi-la-tro-ly.png"
+                  alt="Trợ lý bác sĩ"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-3.5 rounded-2xl text-xs md:text-sm leading-relaxed shadow-sm bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-850 dark:text-slate-200 rounded-tl-none">
+                <p className="whitespace-pre-line">
+                  Xin chào! Tôi là trợ lý AI TheraHome. Bạn có đang gặp vấn đề nhức mỏi cơ, khớp thắt lưng hay vai gáy không? Hãy mô tả để tôi hỗ trợ tư vấn bài tập nhé.
+                </p>
+              </div>
             </div>
-            
-            <h3 className="font-bold text-slate-800 dark:text-white text-sm md:text-base">Xin chào! 👋</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-xs mt-2 leading-relaxed">
-              Tôi là trợ lý AI TheraHome. Bạn có đang gặp vấn đề nhức mỏi cơ, khớp thắt lưng hay vai gáy không? Hãy mô tả để tôi hỗ trợ tư vấn bài tập nhé.
-            </p>
 
             {/* Suggestions */}
-            <div className="grid w-full mt-6 grid-cols-1 gap-2 md:grid-cols-2">
-              {SUGGESTIONS.map((suggestion) => (
-                <button
-                  key={suggestion}
-                  onClick={() => handleSend(suggestion)}
-                  className="w-full p-3 bg-white dark:bg-slate-900 border border-slate-105 dark:border-slate-800 rounded-xl text-left text-xs font-semibold text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-between group"
-                >
-                  <span className="line-clamp-1">{suggestion}</span>
-                  <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 text-indigo-600 transition-all" />
-                </button>
-              ))}
+            <div className="max-w-sm md:max-w-xl mx-auto mt-8 px-4 text-center">
+              <p className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Gợi ý câu hỏi</p>
+              <div className="grid w-full grid-cols-1 gap-2 md:grid-cols-2">
+                {SUGGESTIONS.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    onClick={() => handleSend(suggestion)}
+                    className="w-full p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl text-left text-xs font-semibold text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-between group shadow-sm cursor-pointer"
+                  >
+                    <span className="line-clamp-1">{suggestion}</span>
+                    <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 text-indigo-600 transition-all" />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
@@ -199,13 +231,19 @@ export default function ChatPage() {
               >
                 {/* Avatar Icon */}
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-xs ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden ${
                     isUser
-                      ? 'bg-emerald-600'
-                      : 'bg-gradient-to-tr from-indigo-500 to-purple-600'
+                      ? 'bg-emerald-600 text-white text-xs'
+                      : 'border border-slate-200 dark:border-slate-800 bg-slate-50'
                   }`}
                 >
-                  {isUser ? <UserIcon className="w-4.5 h-4.5" /> : <Bot className="w-4.5 h-4.5" />}
+                  {isUser ? <UserIcon className="w-4.5 h-4.5" /> : (
+                    <img
+                      src="/images/xin-chao-toi-la-tro-ly.png"
+                      alt="Trợ lý bác sĩ"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </div>
 
                 {/* Bubble content */}
@@ -226,8 +264,12 @@ export default function ChatPage() {
         {/* Loading Bubble */}
         {loading && (
           <div className="flex gap-3 max-w-[85%] md:max-w-[72%] mr-auto items-end">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 text-white text-xs">
-              <Bot className="w-4.5 h-4.5" />
+            <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0 bg-slate-50">
+              <img
+                src="/images/xin-chao-toi-la-tro-ly.png"
+                alt="Trợ lý bác sĩ"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-400 rounded-2xl rounded-tl-none text-xs flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"></span>

@@ -115,16 +115,14 @@ function LoginForm() {
         setSuccessMsg('Đăng nhập và kích hoạt thiết bị thành công!');
       }
 
+      const targetUrl = (searchParams ? searchParams.get('redirectTo') : null) || (currentUser.is_pro ? '/home' : '/activate-device');
       window.setTimeout(() => {
-        if (currentUser.onboarding_completed) {
-          router.push('/home');
-        } else {
-          router.push('/onboarding/splash');
-        }
+        router.push(targetUrl);
       }, 1100);
     } catch (err) {
       console.error('Login post-processing error:', err);
-      router.push('/home');
+      const targetUrl = (searchParams ? searchParams.get('redirectTo') : null) || (currentUser.is_pro ? '/home' : '/activate-device');
+      router.push(targetUrl);
     } finally {
       setIsMerging(false);
     }

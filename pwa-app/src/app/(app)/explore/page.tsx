@@ -11,6 +11,7 @@ interface Product {
   key: string;
   name: string;
   image_url?: string;
+  purchase_link?: string;
   description?: string;
 }
 
@@ -34,7 +35,7 @@ export default function ExplorePage() {
   }, [user]);
 
   const ownedKeys = useMemo((): string[] => {
-    return ownedDevicesList.map((d: any) => String(d.device_id || d.id || ''));
+    return ownedDevicesList.map((d: any) => String(d.key || d.device_id || d.id || d.name || ''));
   }, [ownedDevicesList]);
 
   // Devices activated status
@@ -45,6 +46,17 @@ export default function ExplorePage() {
   const hasBackDevice = useMemo(() => {
     return ownedKeys.some((k: string) => k.toLowerCase().includes('back') || k.toLowerCase().includes('rung'));
   }, [ownedKeys]);
+
+  const getProductByKeys = (keys: string[]) => {
+    return products.find((product) => {
+      const key = product.key.toLowerCase();
+      const name = product.name.toLowerCase();
+      return keys.some((target) => key.includes(target) || name.includes(target));
+    });
+  };
+
+  const neckProduct = useMemo(() => getProductByKeys(['ech', 'neck']), [products]);
+  const backProduct = useMemo(() => getProductByKeys(['rung', 'back']), [products]);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -101,7 +113,15 @@ export default function ExplorePage() {
           <div>
             {/* Visual Header */}
             <div className="h-44 bg-gradient-to-tr from-indigo-50 to-purple-55/40 dark:from-indigo-950/20 dark:to-purple-950/20 flex items-center justify-center relative border-b border-slate-50 dark:border-slate-800">
-              <Cpu className="w-16 h-16 text-indigo-600 dark:text-indigo-400 drop-shadow-md" />
+              {neckProduct?.image_url ? (
+                <img
+                  src={neckProduct.image_url}
+                  alt={neckProduct.name}
+                  className="max-h-36 max-w-[80%] object-contain drop-shadow-md"
+                />
+              ) : (
+                <Cpu className="w-16 h-16 text-indigo-600 dark:text-indigo-400 drop-shadow-md" />
+              )}
               <div className="absolute top-4 right-4 text-[10px] font-bold px-2 py-1 rounded bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300">
                 Xung châm & Nhiệt
               </div>
@@ -129,15 +149,25 @@ export default function ExplorePage() {
                 >
                   Kích hoạt
                 </button>
-                <a
-                  href="https://therahome.vn"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all text-center flex items-center justify-center gap-1 shadow-lg shadow-indigo-100 dark:shadow-none"
-                >
-                  Nhận ưu đãi
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </a>
+                {neckProduct?.purchase_link ? (
+                  <a
+                    href={neckProduct.purchase_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all text-center flex items-center justify-center gap-1 shadow-lg shadow-indigo-100 dark:shadow-none"
+                  >
+                    Nhận ưu đãi
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className="flex-1 py-3 rounded-2xl bg-slate-300 text-white text-xs font-bold text-center"
+                  >
+                    Chưa có link
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -148,7 +178,15 @@ export default function ExplorePage() {
           <div>
             {/* Visual Header */}
             <div className="h-44 bg-gradient-to-tr from-emerald-50/50 to-indigo-50/40 dark:from-emerald-950/20 dark:to-indigo-950/20 flex items-center justify-center relative border-b border-slate-50 dark:border-slate-800">
-              <TabletSmartphone className="w-16 h-16 text-emerald-600 dark:text-emerald-400 drop-shadow-md" />
+              {backProduct?.image_url ? (
+                <img
+                  src={backProduct.image_url}
+                  alt={backProduct.name}
+                  className="max-h-36 max-w-[80%] object-contain drop-shadow-md"
+                />
+              ) : (
+                <TabletSmartphone className="w-16 h-16 text-emerald-600 dark:text-emerald-400 drop-shadow-md" />
+              )}
               <div className="absolute top-4 right-4 text-[10px] font-bold px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
                 Xung châm & Rung cơ
               </div>
@@ -176,15 +214,25 @@ export default function ExplorePage() {
                 >
                   Kích hoạt
                 </button>
-                <a
-                  href="https://therahome.vn"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all text-center flex items-center justify-center gap-1 shadow-lg shadow-indigo-100 dark:shadow-none"
-                >
-                  Nhận ưu đãi
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </a>
+                {backProduct?.purchase_link ? (
+                  <a
+                    href={backProduct.purchase_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all text-center flex items-center justify-center gap-1 shadow-lg shadow-indigo-100 dark:shadow-none"
+                  >
+                    Nhận ưu đãi
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className="flex-1 py-3 rounded-2xl bg-slate-300 text-white text-xs font-bold text-center"
+                  >
+                    Chưa có link
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -202,6 +250,14 @@ export default function ExplorePage() {
           </p>
         </div>
       </div>
+
+      {/* Product reviews button */}
+      <button
+        onClick={() => router.push('/product-assessments')}
+        className="w-full py-4 rounded-3xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold transition-all text-center flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 dark:shadow-none cursor-pointer"
+      >
+        Xem đánh giá sản phẩm
+      </button>
     </div>
   );
 }

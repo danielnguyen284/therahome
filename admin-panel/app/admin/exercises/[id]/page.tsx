@@ -49,7 +49,9 @@ export default function EditExercisePage() {
         category: data.category || 'neck',
         target_areas: Array.isArray(data.target_areas) ? data.target_areas : [],
         tags: Array.isArray(data.tags) ? data.tags.join(', ') : '',
-        instructions: Array.isArray(data.instructions) ? data.instructions.join('\n') : '',
+        instructions: Array.isArray(data.instructions)
+          ? data.instructions.map((item: any) => (typeof item === 'object' && item !== null ? item.text : item)).join('\n')
+          : '',
         benefits: Array.isArray(data.benefits) ? data.benefits.join('\n') : '',
         is_pro: data.is_pro || false,
         video_urls_by_pain: {
@@ -77,7 +79,14 @@ export default function EditExercisePage() {
 
     try {
       const instructions = formData.instructions 
-        ? formData.instructions.split('\n').filter(s => s.trim())
+        ? formData.instructions
+            .split('\n')
+            .map(s => s.trim())
+            .filter(s => s)
+            .map((text, index) => ({
+              step: index + 1,
+              text,
+            }))
         : [];
       
       const benefits = formData.benefits

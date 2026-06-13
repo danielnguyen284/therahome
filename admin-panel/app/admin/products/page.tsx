@@ -182,7 +182,7 @@ export default function ProductsPage() {
             type="text"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Tìm theo tên, mã hoặc link mua..."
+            placeholder="Tìm theo tên hoặc link mua..."
             className="input pl-10"
           />
         </div>
@@ -193,7 +193,6 @@ export default function ProductsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã</th>
                 <th>Ảnh</th>
                 <th>Tên sản phẩm</th>
                 <th>Link mua</th>
@@ -204,7 +203,6 @@ export default function ProductsPage() {
             <tbody>
               {filteredProducts.map((product) => (
                 <tr key={product.id}>
-                  <td className="font-semibold text-slate-900">{product.key}</td>
                   <td>
                     {product.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element

@@ -405,6 +405,7 @@ router.put('/profile', protect, async (req, res) => {
       'full_name', 'age', 'occupation', 'gender', 'height', 'weight',
       'target_weight', 'primary_goal', 'focus_area', 'limitations',
       'diet_type', 'pain_areas', 'symptoms', 'surgery_history',
+      'pain_level', 'medical_history',
       'preferred_time', 'avatar_url', 'onboarding_completed', 'notifications_enabled',
       'personalized_plan_started_at', 'personalized_plan_completed_at',
       'personalized_plan_unlock_at'
@@ -415,6 +416,8 @@ router.put('/profile', protect, async (req, res) => {
       if (req.body[field] !== undefined) {
         if (field.endsWith('_at') && req.body[field] !== null) {
           updates[field] = new Date(req.body[field]);
+        } else if (field === 'primary_goal' && Array.isArray(req.body[field])) {
+          updates[field] = req.body[field].join(', ');
         } else {
           updates[field] = req.body[field];
         }
@@ -454,6 +457,7 @@ router.post('/profile/sync', protect, async (req, res) => {
       'full_name', 'age', 'occupation', 'gender', 'height', 'weight',
       'target_weight', 'primary_goal', 'focus_area', 'limitations',
       'diet_type', 'pain_areas', 'symptoms', 'surgery_history',
+      'pain_level', 'medical_history',
       'preferred_time', 'avatar_url', 'onboarding_completed', 'notifications_enabled',
       'personalized_plan_started_at', 'personalized_plan_completed_at',
       'personalized_plan_unlock_at',
@@ -464,6 +468,8 @@ router.post('/profile/sync', protect, async (req, res) => {
       if (req.body[field] !== undefined) {
         if (field.endsWith('_at') && req.body[field] !== null) {
           updates[field] = new Date(req.body[field]);
+        } else if (field === 'primary_goal' && Array.isArray(req.body[field])) {
+          updates[field] = req.body[field].join(', ');
         } else {
           updates[field] = req.body[field];
         }

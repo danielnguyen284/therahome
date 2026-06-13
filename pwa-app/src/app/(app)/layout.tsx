@@ -43,10 +43,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Desktop Sidebar Navigation */}
       <aside className="hidden md:flex flex-col md:w-20 xl:w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 xl:px-4 py-6">
         <div className="flex items-center justify-center xl:justify-start gap-3 px-2 mb-8">
-          <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
-            <span className="text-white font-bold text-lg">T</span>
+          {/* Logo square mark for tablet/ipad */}
+          <div className="w-9 h-9 shrink-0 xl:hidden">
+            <img src="/images/logo-square-ai.png" alt="Thera AI Mark" className="w-full h-full object-contain" />
           </div>
-          <span className="hidden xl:inline font-bold text-lg text-slate-800 dark:text-slate-100">TheraHome</span>
+          {/* Full Logo for desktop */}
+          <div className="hidden xl:block h-9 w-auto">
+            <img src="/images/therahome-logo-black.png" alt="TheraHome" className="h-full w-auto object-contain dark:hidden" />
+            <img src="/images/therahome-logo-white.png" alt="TheraHome" className="h-full w-auto object-contain hidden dark:block" />
+          </div>
         </div>
 
         <nav className="flex-1 space-y-1">
@@ -102,8 +107,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
-        <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 lg:px-10 max-w-7xl mx-auto w-full">
+      <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0 overflow-x-hidden">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:px-8 lg:px-10 max-w-7xl mx-auto w-full">
           {children}
         </main>
       </div>
@@ -111,10 +116,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Floating Chatbot button */}
       <Link
         href="/chat"
-        className="fixed right-4 bottom-20 md:bottom-6 z-40 p-4 bg-indigo-600 text-white rounded-full shadow-xl shadow-indigo-200 dark:shadow-none hover:bg-indigo-500 hover:scale-105 transition-all"
+        className="fixed right-4 bottom-20 z-40 w-14 h-14 rounded-full shadow-xl overflow-hidden border-2 border-white dark:border-slate-850 hover:scale-105 transition-all flex items-center justify-center bg-indigo-50"
         aria-label="Nhắn tin với AI trợ lý"
       >
-        <MessageSquare className="w-6 h-6 animate-pulse" />
+        <img
+          src="/images/xin-chao-toi-la-tro-ly.png"
+          alt="Trợ lý bác sĩ"
+          className="w-full h-full object-cover"
+        />
+        {/* Active badge */}
+        <span className="absolute right-0.5 top-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></span>
       </Link>
 
       {/* Mobile Bottom Tab Navigation */}

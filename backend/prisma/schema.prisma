@@ -25,6 +25,8 @@ model User {
   pain_areas                     String[]
   symptoms                       String[]
   surgery_history                String    @default("")
+  pain_level                     String    @default("")
+  medical_history                String    @default("")
   preferred_time                 String    @default("08:00")
   notifications_enabled          Boolean   @default(true)
   onboarding_completed           Boolean   @default(false)
@@ -187,6 +189,7 @@ model WorkoutPlan {
   description   String   @default("")
   duration_days Int
   target_area   String
+  age_group     String   @default("young")
   difficulty    String   @default("easy")
   thumbnail_url String   @default("")
   is_pro        Boolean  @default(false)

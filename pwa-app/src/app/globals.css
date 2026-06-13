@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f8fafc; /* slate-50 */
   --foreground: #0f172a; /* slate-900 */
+}
+
+:root.dark {
+  --background: #020617; /* slate-950 */
+  --foreground: #f8fafc; /* slate-50 */
 }
 
 @theme inline {
@@ -10,13 +17,36 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular;
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #020617; /* slate-950 */
-    --foreground: #f8fafc; /* slate-50 */
-  }
+  /* Map indigo colors to the TheraHome brand steel/sky blue */
+  --color-indigo-50: #f0f7ff;
+  --color-indigo-100: #e0effe;
+  --color-indigo-105: #e0effe; /* support original shadow/border tokens */
+  --color-indigo-150: #bae0fd;
+  --color-indigo-200: #bae0fd;
+  --color-indigo-300: #7ebbf7;
+  --color-indigo-400: #7DB3E0; /* Brand primaryLight */
+  --color-indigo-500: #5B9BD5; /* Brand primary (TheraHome Blue) */
+  --color-indigo-600: #4A7FB8; /* Brand primaryDark */
+  --color-indigo-650: #3f6e9e;
+  --color-indigo-700: #325780;
+  --color-indigo-800: #254160;
+  --color-indigo-900: #182a3f;
+  --color-indigo-950: #0d1621;
+
+  /* Map purple colors to the brand blue to eliminate purple hue in gradients */
+  --color-purple-50: #f0f7ff;
+  --color-purple-100: #e0effe;
+  --color-purple-200: #bae0fd;
+  --color-purple-300: #7ebbf7;
+  --color-purple-400: #7DB3E0;
+  --color-purple-500: #5B9BD5;
+  --color-purple-650: #3f6e9e;
+  --color-purple-600: #4A7FB8;
+  --color-purple-700: #325780;
+  --color-purple-800: #254160;
+  --color-purple-900: #182a3f;
+  --color-purple-950: #0d1621;
 }
 
 html,
@@ -136,6 +166,12 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+#reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
 }
 
 .animate-slide-up {

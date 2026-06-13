@@ -7,6 +7,7 @@ import {
 	Platform,
 	Dimensions,
 	TouchableOpacity,
+	Image,
 } from "react-native";
 import {
 	Text,
@@ -137,12 +138,10 @@ export default function ChatScreen() {
 			>
 				{!isUser && (
 					<View style={styles.avatarContainer}>
-						<LinearGradient
-							colors={["#5B9BD5", "#4A7FB8"]}
+						<Image
+							source={require("@/assets/Xin chao tôi là trợ lí.png")}
 							style={styles.avatar}
-						>
-							<Bot size={20} color="#FFFFFF" />
-						</LinearGradient>
+						/>
 					</View>
 				)}
 
@@ -196,7 +195,10 @@ export default function ChatScreen() {
 						style={styles.header}
 					>
 						<View style={styles.titleRow}>
-							<Bot size={32} color={colors.primary} />
+							<Image
+								source={require("@/assets/Xin chao tôi là trợ lí.png")}
+								style={{ width: 36, height: 36, borderRadius: 18 }}
+							/>
 							<View style={styles.titleContainer}>
 								<Text style={styles.title}>Trợ lý AI</Text>
 								<Text style={styles.subtitle}>
@@ -252,12 +254,10 @@ export default function ChatScreen() {
 						{loading && (
 							<Animated.View entering={FadeInUp} style={styles.loadingRow}>
 								<View style={styles.avatarContainer}>
-									<LinearGradient
-										colors={["#5B9BD5", "#4A7FB8"]}
+									<Image
+										source={require("@/assets/Xin chao tôi là trợ lí.png")}
 										style={styles.avatar}
-									>
-										<Bot size={20} color="#FFFFFF" />
-									</LinearGradient>
+									/>
 								</View>
 								<View style={styles.loadingMessage}>
 									<ActivityIndicator size="small" color={colors.primary} />

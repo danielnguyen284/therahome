@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../../stores/authStore';
+import { useThemeStore } from '../../../stores/themeStore';
 import { api } from '../../../lib/api';
 import {
   Flame,
@@ -18,6 +19,9 @@ import {
   Smartphone,
   Info,
   Calendar,
+  QrCode,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 interface PainLog {
@@ -46,9 +50,18 @@ interface Tip {
   category: string;
 }
 
+interface Product {
+  id: string;
+  key: string;
+  name: string;
+  image_url?: string;
+  purchase_link?: string;
+}
+
 export default function HomePage() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
   const [loading, setLoading] = useState(true);
   
   // Data States
@@ -62,6 +75,7 @@ export default function HomePage() {
   const [water, setWater] = useState<WaterData>({ cups: 0, goal: 8 });
   const [dailyTip, setDailyTip] = useState<string>('Hãy duy trì tư thế thẳng khi làm việc mỗi ngày!');
   const [nutritionTip, setNutritionTip] = useState<string>('Uống đủ nước giúp các khớp xương hoạt động trơn tru hơn.');
+  const [products, setProducts] = useState<Product[]>([]);
   
   // Dialog state
   const [showScoreInfo, setShowScoreInfo] = useState(false);
@@ -99,6 +113,7 @@ export default function HomePage() {
           waterRes,
           healthTipsRes,
           nutritionTipsRes,
+          productsRes,
         ] = await Promise.allSettled([
           api.get<PainLog>('/pain-logs/today'),
           api.get<PainLog[]>('/pain-logs?days=7'),
@@ -106,6 +121,7 @@ export default function HomePage() {
           api.get<WaterData>('/water/today'),
           api.get<Tip[]>('/health-tips?limit=1'),
           api.get<Tip[]>('/nutrition-tips?limit=1'),
+          api.get<Product[]>('/products'),
         ]);
 
         if (todayPainRes.status === 'fulfilled') {
@@ -125,6 +141,9 @@ export default function HomePage() {
         }
         if (nutritionTipsRes.status === 'fulfilled' && nutritionTipsRes.value?.length) {
           setNutritionTip(nutritionTipsRes.value[0].content);
+        }
+        if (productsRes.status === 'fulfilled' && Array.isArray(productsRes.value)) {
+          setProducts(productsRes.value);
         }
       } catch (err) {
         console.error('Error loading dashboard stats:', err);
@@ -157,22 +176,30 @@ export default function HomePage() {
   const deviceRecommendation = useMemo(() => {
     if (!user) return null;
     const areas = user.pain_areas || [];
+    const findProduct = (targets: string[]) =>
+      products.find((product) => {
+        const key = product.key.toLowerCase();
+        const name = product.name.toLowerCase();
+        return targets.some((target) => key.includes(target) || name.includes(target));
+      });
     
     // Neck device offer
     if (areas.includes('neck') || areas.includes('head')) {
+      const product = findProduct(['ech', 'neck']);
       return {
-        name: 'TheraNeck Pro',
+        name: product?.name || 'TheraNECK',
         benefit: 'Giúp giảm mỏi cổ vai gáy với xung nhiệt tự động và tia hồng ngoại.',
-        path: '/explore',
+        purchaseLink: product?.purchase_link || '',
       };
     }
     // Back device offer
+    const product = findProduct(['rung', 'back']);
     return {
-      name: 'TheraBack Spine',
+      name: product?.name || 'TheraBACK',
       benefit: 'Định hình đốt sống lưng, giảm áp lực cột sống khi ngồi làm việc lâu.',
-      path: '/explore',
+      purchaseLink: product?.purchase_link || '',
     };
-  }, [user]);
+  }, [user, products]);
 
   if (loading) {
     return (
@@ -196,13 +223,23 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Streak badge */}
-        {behavior.streak_days > 0 && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-            <Flame className="w-4 h-4 fill-amber-500 animate-bounce" />
-            <span className="text-xs font-bold">{behavior.streak_days} Ngày</span>
-          </div>
-        )}
+        {/* Top Actions: Theme & Streak */}
+        <div className="flex items-center gap-3">
+          {behavior.streak_days > 0 && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              <Flame className="w-4 h-4 fill-amber-500 animate-bounce" />
+              <span className="text-xs font-bold">{behavior.streak_days} Ngày</span>
+            </div>
+          )}
+          
+          <button
+            onClick={toggleTheme}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-800 transition active:scale-95 cursor-pointer shadow-xs"
+            aria-label="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Grid containing Health Score and Stats */}
@@ -362,59 +399,29 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Recommendations & Device Banner */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Daily Tips (Health & Nutrition) */}
+      <div className="space-y-4">
+        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">Lời khuyên trong ngày</h3>
         
-        {/* Daily Tips (Health & Nutrition) */}
-        <div className="md:col-span-2 space-y-4">
-          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">Lời khuyên trong ngày</h3>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl">
-              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded uppercase">
-                Sức khỏe
-              </span>
-              <p className="text-xs md:text-sm text-slate-700 dark:text-slate-300 mt-2.5 leading-relaxed">
-                {dailyTip}
-              </p>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl">
+            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded uppercase">
+              Sức khỏe
+            </span>
+            <p className="text-xs md:text-sm text-slate-700 dark:text-slate-300 mt-2.5 leading-relaxed">
+              {dailyTip}
+            </p>
+          </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl">
-              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded uppercase">
-                Dinh dưỡng
-              </span>
-              <p className="text-xs md:text-sm text-slate-700 dark:text-slate-300 mt-2.5 leading-relaxed">
-                {nutritionTip}
-              </p>
-            </div>
+          <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl">
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded uppercase">
+              Dinh dưỡng
+            </span>
+            <p className="text-xs md:text-sm text-slate-700 dark:text-slate-300 mt-2.5 leading-relaxed">
+              {nutritionTip}
+            </p>
           </div>
         </div>
-
-        {/* Device Recommendation */}
-        {deviceRecommendation && (
-          <div className="bg-slate-900 text-white rounded-3xl p-6 flex flex-col justify-between border border-slate-800">
-            <div>
-              <div className="flex items-center gap-2 text-indigo-400 mb-3">
-                <Smartphone className="w-5 h-5" />
-                <span className="text-xs font-bold uppercase tracking-wider">Ưu đãi độc quyền</span>
-              </div>
-              <h4 className="font-bold text-base text-white">{deviceRecommendation.name}</h4>
-              <p className="text-slate-400 text-xs mt-2 leading-relaxed">
-                {deviceRecommendation.benefit}
-              </p>
-            </div>
-
-            <a
-              href="https://therahome.vn"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-6 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white text-slate-950 hover:bg-slate-100 font-semibold text-xs transition-all"
-            >
-              Tìm hiểu thêm
-              <ChevronRight className="w-4 h-4" />
-            </a>
-          </div>
-        )}
       </div>
 
       {/* Info Modal on Health Score */}

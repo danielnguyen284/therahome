@@ -49,10 +49,20 @@ export function createDefaultDraft(): GuestProfile {
   };
 }
 
+export interface Product {
+  id: string;
+  key: string;
+  name: string;
+  image_url: string;
+  purchase_link: string;
+}
+
 interface OnboardingState {
   draft: GuestProfile;
   pendingActivationCode: string | null;
   currentStep: string;
+  products: Product[];
+  setProducts: (products: Product[]) => void;
   setDraftField: <K extends keyof GuestProfile>(field: K, value: GuestProfile[K]) => void;
   updateDraft: (updates: Partial<GuestProfile>) => void;
   setPendingActivationCode: (code: string | null) => void;
@@ -65,6 +75,9 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   draft: createDefaultDraft(),
   pendingActivationCode: null,
   currentStep: 'welcome',
+  products: [],
+
+  setProducts: (products) => set({ products }),
 
   setDraftField: (field, value) => {
     const updatedDraft = { ...get().draft, [field]: value };
@@ -84,6 +97,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
 
   setCurrentStep: (step) => {
     set({ currentStep: step });
+    storage.set('therahome_onboarding_step', step);
   },
 
   loadDraft: () => {
@@ -92,10 +106,15 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     if (storedDraft) {
       set({ draft: storedDraft });
     }
+    const storedStep = storage.get<string>('therahome_onboarding_step');
+    if (storedStep) {
+      set({ currentStep: storedStep });
+    }
   },
 
   clearDraft: () => {
     set({ draft: createDefaultDraft(), pendingActivationCode: null, currentStep: 'welcome' });
     storage.remove('therahome_onboarding_draft');
+    storage.remove('therahome_onboarding_step');
   },
 }));

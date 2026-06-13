@@ -40,7 +40,8 @@ function GoogleCallbackContent() {
                 setUser(profile);
                 setStatus('success');
                 setMessage('Đăng nhập Google thành công!');
-                router.replace(profile.onboarding_completed ? '/home' : '/onboarding/splash');
+                const targetUrl = searchParams.get('redirectTo') || (profile.is_pro ? '/home' : '/activate-device');
+                router.replace(targetUrl);
               }
               return;
             }
@@ -104,8 +105,9 @@ function GoogleCallbackContent() {
         setStatus('success');
         setMessage('Đăng nhập Google thành công!');
 
+        const targetUrl = searchParams.get('redirectTo') || (currentUser.is_pro ? '/home' : '/activate-device');
         window.setTimeout(() => {
-          router.replace(currentUser.onboarding_completed ? '/home' : '/onboarding/splash');
+          router.replace(targetUrl);
         }, 700);
       } catch (err) {
         console.error('Google OAuth callback error:', err);

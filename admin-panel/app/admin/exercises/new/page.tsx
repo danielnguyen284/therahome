@@ -39,7 +39,14 @@ export default function NewExercisePage() {
     try {
       // Parse JSON fields
       const instructions = formData.instructions 
-        ? formData.instructions.split('\n').filter(s => s.trim())
+        ? formData.instructions
+            .split('\n')
+            .map(s => s.trim())
+            .filter(s => s)
+            .map((text, index) => ({
+              step: index + 1,
+              text,
+            }))
         : [];
       
       const benefits = formData.benefits

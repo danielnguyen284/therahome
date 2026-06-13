@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
-import { Plus, Edit, Trash2, Search, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, X, Image as ImageIcon } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showSuccess, showError } from '@/lib/toast';
+import ImageUpload from '@/components/ImageUpload';
 
 interface PostureItem {
   id: string;
@@ -309,17 +310,49 @@ export default function PosturesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  URL ảnh
+                  Hình ảnh tư thế (Có thể thêm nhiều ảnh)
                 </label>
-                <textarea
-                  value={formData.image_urls}
-                  onChange={(e) => setFormData({ ...formData, image_urls: e.target.value })}
-                  className="input"
-                  rows={4}
-                  placeholder={'Mỗi dòng là 1 URL ảnh\nhttps://...\nhttps://...'}
+                
+                {/* List of current images */}
+                {formData.image_urls.split('\n').map((u) => u.trim()).filter(Boolean).length > 0 && (
+                  <div className="flex flex-wrap gap-3 mb-4 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                    {formData.image_urls.split('\n').map((u) => u.trim()).filter(Boolean).map((url, idx) => (
+                      <div key={idx} className="relative w-24 h-24 border border-slate-200 rounded overflow-hidden group">
+                        <img
+                          src={url}
+                          alt={`Preview ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const currentUrls = formData.image_urls.split('\n').map((u) => u.trim()).filter(Boolean);
+                            const updatedUrls = currentUrls.filter((_, i) => i !== idx);
+                            setFormData({ ...formData, image_urls: updatedUrls.join('\n') });
+                          }}
+                          className="absolute -top-1 -right-1 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload new image */}
+                <ImageUpload
+                  value=""
+                  onChange={(url) => {
+                    if (url) {
+                      const currentUrls = formData.image_urls.split('\n').map((u) => u.trim()).filter(Boolean);
+                      const updatedUrls = [...currentUrls, url];
+                      setFormData({ ...formData, image_urls: updatedUrls.join('\n') });
+                    }
+                  }}
+                  label="Tải lên ảnh mới"
                 />
                 <p className="text-xs text-slate-500 mt-2">
-                  Mỗi dòng là một ảnh. App sẽ hiển thị vuốt ngang trong cùng một card.
+                  Tải lên một hoặc nhiều ảnh. Ứng dụng di động sẽ hiển thị vuốt ngang các ảnh này trong cùng một thẻ tư thế.
                 </p>
               </div>
 

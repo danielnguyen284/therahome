@@ -7,6 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showSuccess, showError } from '@/lib/toast';
 import Image from 'next/image';
+import ImageUpload from '@/components/ImageUpload';
 
 interface LibraryItem {
   _id: string;
@@ -276,23 +277,11 @@ export default function LibraryPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  URL Ảnh (tuỳ chọn)
-                </label>
-                <input
-                  type="text"
+                <ImageUpload
                   value={formData.coverImage}
-                  onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
-                  className="input"
-                  placeholder="https://..."
+                  onChange={(url) => setFormData({ ...formData, coverImage: url })}
+                  label="URL Ảnh (tuỳ chọn)"
                 />
-                {formData.coverImage && (
-                  <img 
-                    src={formData.coverImage} 
-                    alt="Preview" 
-                    className="mt-2 w-32 h-20 object-cover rounded border"
-                  />
-                )}
               </div>
 
               <div>
