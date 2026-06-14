@@ -109,7 +109,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0 overflow-x-hidden">
+      <div className="flex-1 flex flex-col min-w-0 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden pt-[env(safe-area-inset-top)]">
         <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:px-8 lg:px-10 max-w-7xl mx-auto w-full">
           {children}
         </main>
@@ -170,7 +170,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Mobile Bottom Tab Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 md:hidden z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-850 px-2 py-1 flex items-center justify-around">
+      <nav className="fixed bottom-0 left-0 right-0 md:hidden z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-850 px-2 pt-1 pb-[calc(env(safe-area-inset-bottom)+0.25rem)] flex items-center justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
