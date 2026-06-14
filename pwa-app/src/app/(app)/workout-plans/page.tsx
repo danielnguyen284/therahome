@@ -11,6 +11,7 @@ interface WorkoutPlan {
   title: string;
   description: string;
   target_area: string;
+  age_group: string;
   duration_days: number;
   is_pro: boolean;
 }
@@ -61,11 +62,29 @@ export default function WorkoutPlansPage() {
   };
 
   const visiblePlans = useMemo(() => {
-    if (!painAreaParam) return plans;
-    const targetAreas = mapPainAreaToPlanTargets(painAreaParam);
-    const matched = plans.filter((plan) => targetAreas.includes(plan.target_area));
-    return matched.length > 0 ? matched.slice(0, 1) : plans.slice(0, 1);
-  }, [plans, painAreaParam]);
+    if (!user) return plans;
+
+    const userAge = user.age || 0;
+    const ageGroup = userAge < 45 ? 'young' : 'elder';
+    
+    const activePainArea = painAreaParam || user.pain_areas?.[0] || '';
+    const focusArea = activePainArea || user.focus_area || '';
+    
+    let targetArea = 'full';
+    if (focusArea.toLowerCase().includes('cổ') || focusArea.toLowerCase().includes('neck') || focusArea.toLowerCase().includes('vai') || focusArea.toLowerCase().includes('shoulder')) {
+      targetArea = 'neck';
+    } else if (focusArea.toLowerCase().includes('lưng') || focusArea.toLowerCase().includes('back')) {
+      targetArea = 'back';
+    }
+
+    const matched = plans.filter((plan) => plan.age_group === ageGroup && plan.target_area === targetArea);
+    if (matched.length > 0) return matched;
+    
+    const areaMatched = plans.filter((plan) => plan.target_area === targetArea);
+    if (areaMatched.length > 0) return areaMatched;
+
+    return plans.slice(0, 1);
+  }, [plans, painAreaParam, user]);
 
   const buildPlanTitle = (plan: WorkoutPlan) => {
     if (painAreaLabelParam) {

@@ -155,21 +155,8 @@ export default function WorkoutPlanDetailPage() {
   const completedCount = dayExercises.filter((d) => d.isCompleted).length;
   const progressPercent = Math.round((completedCount / FIXED_PLAN_DAYS) * 100);
   const currentDayData = dayExercises.find((d) => d.day === currentDay);
-
-  const displayPlanTitle = selectedAreaLabelParam
-    ? `Lộ trình cải thiện ${selectedAreaLabelParam.toLocaleLowerCase('vi-VN')} ${FIXED_PLAN_DAYS} ngày`
-    : plan.title.replace(/\d+\s*ngày/i, `${FIXED_PLAN_DAYS} ngày`);
-
   return (
     <div className="w-full max-w-xl md:max-w-3xl lg:max-w-4xl mx-auto space-y-6">
-      
-      {/* Title */}
-      <div>
-        <h1 className="text-xl md:text-2xl font-black text-slate-850 dark:text-white leading-tight">
-          {displayPlanTitle}
-        </h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{plan.description}</p>
-      </div>
 
       {/* Progress Card */}
       <div className="bg-gradient-to-tr from-indigo-600 to-purple-650 text-white rounded-3xl p-5 md:p-6 shadow-md space-y-4">

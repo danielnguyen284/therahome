@@ -60,6 +60,16 @@ interface Product {
   purchase_link?: string;
 }
 
+interface WorkoutPlan {
+  id: string;
+  title: string;
+  description: string;
+  target_area: string;
+  age_group: string;
+  duration_days: number;
+  is_pro: boolean;
+}
+
 export default function HomePage() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -78,6 +88,11 @@ export default function HomePage() {
   const [dailyTip, setDailyTip] = useState<string>('Hãy duy trì tư thế thẳng khi làm việc mỗi ngày!');
   const [nutritionTip, setNutritionTip] = useState<string>('Uống đủ nước giúp các khớp xương hoạt động trơn tru hơn.');
   const [products, setProducts] = useState<Product[]>([]);
+  
+  // Resolved Workout Plan States
+  const [resolvedPlanId, setResolvedPlanId] = useState<string | null>(null);
+  const [resolvedArea, setResolvedArea] = useState<string>('full');
+  const [resolvedAreaLabel, setResolvedAreaLabel] = useState<string>('Toàn thân');
   
   // Dialog state
   const [showScoreInfo, setShowScoreInfo] = useState(false);
@@ -147,6 +162,7 @@ export default function HomePage() {
           healthTipsRes,
           nutritionTipsRes,
           productsRes,
+          workoutPlansRes,
         ] = await Promise.allSettled([
           api.get<PainLog>('/pain-logs/today'),
           api.get<PainLog[]>('/pain-logs?days=7'),
@@ -155,6 +171,7 @@ export default function HomePage() {
           api.get<Tip[]>('/health-tips?limit=1'),
           api.get<Tip[]>('/nutrition-tips?limit=1'),
           api.get<Product[]>('/products'),
+          api.get<WorkoutPlan[]>('/workout-plans'),
         ]);
 
         if (todayPainRes.status === 'fulfilled') {
@@ -177,6 +194,32 @@ export default function HomePage() {
         }
         if (productsRes.status === 'fulfilled' && Array.isArray(productsRes.value)) {
           setProducts(productsRes.value);
+        }
+        if (workoutPlansRes.status === 'fulfilled' && Array.isArray(workoutPlansRes.value)) {
+          const plans = workoutPlansRes.value;
+          const userAge = user.age || 0;
+          const ageGroup = userAge < 45 ? 'young' : 'elder';
+          
+          const focusArea = user.focus_area || '';
+          let targetArea = 'full';
+          let targetAreaLabel = 'Toàn thân';
+          if (focusArea.toLowerCase().includes('cổ') || focusArea.toLowerCase().includes('neck') || focusArea.toLowerCase().includes('vai') || focusArea.toLowerCase().includes('shoulder')) {
+            targetArea = 'neck';
+            targetAreaLabel = 'Cổ vai gáy';
+          } else if (focusArea.toLowerCase().includes('lưng') || focusArea.toLowerCase().includes('back')) {
+            targetArea = 'back';
+            targetAreaLabel = 'Lưng & cột sống';
+          }
+
+          setResolvedArea(targetArea);
+          setResolvedAreaLabel(targetAreaLabel);
+
+          const match = plans.find(p => p.age_group === ageGroup && p.target_area === targetArea);
+          if (match) {
+            setResolvedPlanId(match.id);
+          } else {
+            setResolvedPlanId(plans[0]?.id || null);
+          }
         }
       } catch (err) {
         console.error('Error loading dashboard stats:', err);
@@ -349,7 +392,7 @@ export default function HomePage() {
 
       {/* 14 ngày phục hồi chuyên sâu */}
       <Link
-        href="/pain-input"
+        href={resolvedPlanId ? `/workout-plan-detail/${resolvedPlanId}?selectedArea=${resolvedArea}&selectedAreaLabel=${encodeURIComponent(resolvedAreaLabel)}` : '/pain-input'}
         className="relative flex min-h-[148px] cursor-pointer flex-col justify-between overflow-hidden rounded-[22px] bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-400 p-4 text-white shadow-lg shadow-emerald-100 transition-all hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] dark:shadow-none md:p-6"
       >
         <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/20 blur-2xl"></div>
@@ -368,7 +411,7 @@ export default function HomePage() {
 
         <div className="mt-4 flex items-center justify-between gap-3">
           <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 shadow-sm">
-            {todayPainLog ? 'Bắt đầu bài tập' : 'Cập nhật mức đau'}
+            Bắt đầu bài tập
           </span>
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/25">
             <ChevronRight className="h-4 w-4 text-white" />
