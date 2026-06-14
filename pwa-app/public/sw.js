@@ -65,7 +65,7 @@ self.addEventListener('push', (e) => {
     body: 'Bạn có thông báo mới nhắc nhở chăm sóc sức khỏe cột sống!',
     icon: '/images/icon.png',
     badge: '/images/favicon.png',
-    data: { url: '/' }
+    data: { url: '/notifications' }
   };
 
   if (e.data) {
@@ -81,7 +81,7 @@ self.addEventListener('push', (e) => {
     body: data.body,
     icon: data.icon,
     badge: data.badge,
-    data: data.data || { url: '/' },
+    data: data.data || { url: '/notifications' },
     vibrate: [100, 50, 100],
   };
 
@@ -94,7 +94,7 @@ self.addEventListener('push', (e) => {
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
 
-  const urlToOpen = new URL(e.notification.data?.url || '/', self.location.origin).href;
+  const urlToOpen = new URL(e.notification.data?.url || '/notifications', self.location.origin).href;
 
   e.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {

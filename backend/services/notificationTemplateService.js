@@ -50,7 +50,7 @@ async function seedNotificationTemplates() {
 }
 
 async function getMergedTemplatesForUser(userId) {
-  const [user, templates] = await Promise.all([
+  const [user, templates, overrides] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { preferred_time: true },
@@ -58,13 +58,37 @@ async function getMergedTemplatesForUser(userId) {
     prisma.notificationTemplate.findMany({
       where: { key: { in: VALID_NOTIFICATION_KEYS } },
     }),
+    prisma.notificationUserOverride.findMany({
+      where: { user_id: userId, key: { in: VALID_NOTIFICATION_KEYS } },
+    }),
   ]);
 
+  return mergeNotificationTemplatesForUser({
+    templates,
+    overrides,
+    preferredTime: user?.preferred_time,
+  });
+}
+
+function mergeNotificationTemplatesForUser({ templates, overrides = [], preferredTime }) {
+  const overrideMap = new Map(overrides.map((override) => [override.key, override]));
+
   return sortNotificationTemplates(templates).map((templateDoc) => {
-    const template = applyPreferredTimeToTemplate(
-      templateDoc,
-      user?.preferred_time,
-    );
+    const override = overrideMap.get(templateDoc.key);
+
+    if (override) {
+      return {
+        ...templateDoc,
+        title: override.title,
+        body: override.body,
+        hour: override.hour,
+        minute: override.minute,
+        is_active: override.is_active,
+        is_overridden: true,
+      };
+    }
+
+    const template = applyPreferredTimeToTemplate(templateDoc, preferredTime);
     return {
       ...template,
       is_overridden: false,
@@ -75,4 +99,5 @@ async function getMergedTemplatesForUser(userId) {
 module.exports = {
   seedNotificationTemplates,
   getMergedTemplatesForUser,
+  mergeNotificationTemplatesForUser,
 };

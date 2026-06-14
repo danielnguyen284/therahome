@@ -8,6 +8,7 @@ function serializeNotification(notification) {
   if (!notification) return null;
   return {
     id: notification.id,
+    broadcast_id: notification.broadcast_id || null,
     key: notification.key,
     title: notification.title,
     body: notification.body,
@@ -226,7 +227,7 @@ router.get('/notifications', protect, async (req, res) => {
       orderBy: [{ sent_at: 'desc' }, { created_at: 'desc' }],
       take: limit,
       select: {
-        id: true, key: true, title: true, body: true,
+        id: true, broadcast_id: true, key: true, title: true, body: true,
         sent_at: true, created_at: true, is_read: true, read_at: true,
       },
     });
@@ -267,7 +268,7 @@ router.put('/notifications/:id/read', protect, async (req, res) => {
       where: { id: req.params.id },
       data: { is_read: true, read_at: new Date() },
       select: {
-        id: true, key: true, title: true, body: true,
+        id: true, broadcast_id: true, key: true, title: true, body: true,
         sent_at: true, created_at: true, is_read: true, read_at: true,
       },
     });

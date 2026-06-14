@@ -4,13 +4,15 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '../../stores/authStore';
-import { Home, Activity, Compass, BookOpen, User, MessageSquare, LogOut, ShieldAlert } from 'lucide-react';
+import { Home, Activity, Compass, BookOpen, User, LogOut, ShieldAlert, Download, X } from 'lucide-react';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, isAuthenticated, signOut } = useAuthStore();
   const pathname = usePathname();
   const router = useRouter();
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const { showBanner, isIOS, showIOSGuide, openIOSGuide, closeIOSGuide, triggerInstall, dismiss } = usePWAInstall();
 
   if (isLoading) {
     return (
@@ -128,6 +130,45 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <span className="absolute right-0.5 top-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></span>
       </Link>
 
+      {/* PWA Install Banner — hiện trên mobile, tự hiện lại sau 24h nếu đóng */}
+      {showBanner && (
+        <div className="fixed bottom-16 left-3 right-3 z-50 md:hidden">
+          <div className="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl shadow-2xl shadow-indigo-500/30 px-4 py-3 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 overflow-hidden">
+              <img src="/images/logo-square-ai.png" alt="TheraHome" className="w-8 h-8 object-contain" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-xs font-bold leading-tight">Thêm vào màn hình chính</p>
+              <p className="text-indigo-200 text-[10px] leading-tight mt-0.5 truncate">Truy cập nhanh hơn, không cần trình duyệt</p>
+            </div>
+            {isIOS ? (
+              <button
+                onClick={openIOSGuide}
+                className="flex items-center gap-1.5 bg-white text-indigo-600 text-xs font-bold px-3 py-1.5 rounded-xl shrink-0 hover:bg-indigo-50 active:scale-95 transition-all"
+              >
+                Cách cài
+              </button>
+            ) : (
+              <button
+                onClick={triggerInstall}
+                className="flex items-center gap-1.5 bg-white text-indigo-600 text-xs font-bold px-3 py-1.5 rounded-xl shrink-0 hover:bg-indigo-50 active:scale-95 transition-all"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Tải app
+              </button>
+            )}
+            <button
+              onClick={dismiss}
+              className="text-white/50 hover:text-white transition-colors p-1 shrink-0"
+              aria-label="Nhắc tôi sau"
+              title="Nhắc lại sau 24 giờ"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Bottom Tab Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 md:hidden z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-850 px-2 py-1 flex items-center justify-around">
         {navItems.map((item) => {
@@ -175,6 +216,93 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 Đăng xuất
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* iOS Install Guide Sheet — mở khi bấm "Cách cài" trên banner */}
+      {showIOSGuide && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center md:hidden">
+          {/* Backdrop — đóng guide nhưng KHÔNG dismiss banner */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeIOSGuide} />
+
+          {/* Sheet */}
+          <div className="relative w-full bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl px-5 pt-5 pb-10 border-t border-slate-100 dark:border-slate-800">
+            {/* Handle bar */}
+            <div className="w-10 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-5" />
+
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100">
+                  <img src="/images/logo-square-ai.png" alt="TheraHome" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">Cài đặt TheraHome</p>
+                  <p className="text-[11px] text-slate-400">Thêm vào màn hình chính</p>
+                </div>
+              </div>
+              <button
+                onClick={closeIOSGuide}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500"
+                aria-label="Đóng hướng dẫn"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Steps */}
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    Nhấn nút <span className="text-indigo-600">&ldquo;Chia sẻ&rdquo;</span>
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Tìm biểu tượng{' '}
+                    <span className="inline-flex items-center gap-0.5 font-medium text-slate-700 dark:text-slate-200">
+                      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                        <polyline points="16 6 12 2 8 6" />
+                        <line x1="12" y1="2" x2="12" y2="15" />
+                      </svg>
+                      mũi tên hướng lên
+                    </span>{' '}
+                    ở thanh công cụ dưới cùng của Safari.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    Chọn <span className="text-indigo-600">&ldquo;Thêm vào màn hình chính&rdquo;</span>
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cuộn xuống trong menu hiện ra và nhấn vào tùy chọn này.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    Nhấn <span className="text-indigo-600">&ldquo;Thêm&rdquo;</span> để xác nhận
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">TheraHome sẽ xuất hiện như một ứng dụng trên màn hình chính của bạn.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="my-5 border-t border-slate-100 dark:border-slate-800" />
+
+            <button
+              onClick={closeIOSGuide}
+              className="w-full py-3 rounded-2xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 active:scale-[0.98] transition-all"
+            >
+              Đã hiểu, để tôi thử
+            </button>
           </div>
         </div>
       )}

@@ -4,6 +4,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const { connectDB } = require('./config/db');
 const notificationTemplatesRoute = require('./routes/notificationTemplates');
+const adminNotificationsRoute = require('./routes/adminNotifications');
 const { startNotificationDispatcher } = require('./services/notificationDispatcher');
 const { seedNotificationTemplates } = require('./services/notificationTemplateService');
 
@@ -65,6 +66,7 @@ app.use('/api/videos', require('./routes/videos'));
 app.use('/api/personalized-plan-videos', require('./routes/personalizedPlanVideos'));
 app.use('/api/library', require('./routes/library'));
 app.use('/api/notification-templates', notificationTemplatesRoute);
+app.use('/api/admin/notifications', adminNotificationsRoute);
 app.use('/api', require('./routes/misc'));
 
 // Health check

@@ -1,7 +1,10 @@
 const { prisma } = require('../config/db');
-const { seedNotificationTemplates, getMergedTemplatesForUser } = require('./notificationTemplateService');
+const {
+  seedNotificationTemplates,
+  getMergedTemplatesForUser,
+  mergeNotificationTemplatesForUser,
+} = require('./notificationTemplateService');
 const { sendExpoPushNotification, isExpoPushToken, sendWebPushNotification } = require('./pushNotifications');
-const { applyPreferredTimeToTemplate } = require('./userNotificationPreferences');
 const {
   VALID_NOTIFICATION_KEYS,
   RECOVERY_DAYS,
@@ -65,13 +68,11 @@ function matchesCurrentMinute(template, now, timeZone = NOTIFICATION_TIMEZONE) {
   return template.hour === parts.hour && template.minute === parts.minute;
 }
 
-function buildMergedTemplates(baseTemplates) {
-  return (user) => baseTemplates.map((templateDoc) => {
-    const template = applyPreferredTimeToTemplate(
-      templateDoc,
-      user?.preferred_time,
-    );
-    return template;
+function buildMergedTemplates(baseTemplates, overridesByUserId = new Map()) {
+  return (user) => mergeNotificationTemplatesForUser({
+    templates: baseTemplates,
+    overrides: overridesByUserId.get(String(user.id)) || [],
+    preferredTime: user?.preferred_time,
   });
 }
 
@@ -204,6 +205,7 @@ async function sendNotificationToUser({ userId, email, tokenDoc, notification })
         title: notification.title,
         body: notification.body,
         data: {
+          url: '/notifications',
           notification_key: notification.key,
           user_id: String(userId),
         },
@@ -214,6 +216,7 @@ async function sendNotificationToUser({ userId, email, tokenDoc, notification })
         title: notification.title,
         body: notification.body,
         data: {
+          url: '/notifications',
           notification_key: notification.key,
           user_id: String(userId),
         },
@@ -296,7 +299,7 @@ async function dispatchNotificationsOnce() {
     }
 
     const userIds = users.map((user) => user.id);
-    const [tokens, lastWorkouts, baseTemplates] = await Promise.all([
+    const [tokens, lastWorkouts, baseTemplates, overrides] = await Promise.all([
       prisma.notificationToken.findMany({
         where: { user_id: { in: userIds } },
         select: { id: true, user_id: true, token: true, platform: true },
@@ -311,11 +314,21 @@ async function dispatchNotificationsOnce() {
         where: { key: { in: VALID_NOTIFICATION_KEYS } },
         orderBy: { key: 'asc' },
       }),
+      prisma.notificationUserOverride.findMany({
+        where: { user_id: { in: userIds }, key: { in: VALID_NOTIFICATION_KEYS } },
+      }),
     ]);
 
     const tokenMap = new Map(tokens.map((tokenDoc) => [String(tokenDoc.user_id), tokenDoc]));
     const lastWorkoutMap = new Map(lastWorkouts.map((item) => [String(item.user_id), item.completed_at || null]));
-    const getTemplatesForUser = buildMergedTemplates(baseTemplates);
+    const overridesByUserId = new Map();
+    overrides.forEach((override) => {
+      const userId = String(override.user_id);
+      const items = overridesByUserId.get(userId) || [];
+      items.push(override);
+      overridesByUserId.set(userId, items);
+    });
+    const getTemplatesForUser = buildMergedTemplates(baseTemplates, overridesByUserId);
 
     const summary = {
       checkedUsers: users.length,

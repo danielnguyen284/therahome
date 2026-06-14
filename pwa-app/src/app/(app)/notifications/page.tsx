@@ -7,6 +7,7 @@ import { ArrowLeft, Bell, Check, BellRing } from 'lucide-react';
 
 interface NotificationInboxItem {
   id: string;
+  broadcast_id?: string | null;
   key?: string;
   title: string;
   body: string;
@@ -43,7 +44,10 @@ export default function NotificationsPage() {
   };
 
   useEffect(() => {
-    loadNotifications();
+    const timeoutId = window.setTimeout(() => {
+      void loadNotifications();
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const handleMarkOne = async (item: NotificationInboxItem) => {

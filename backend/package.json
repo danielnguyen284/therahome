@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "TheraHome Backend API - MongoDB + Express.js",
   "main": "server.js",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "dev": "node --watch server.js",
     "start": "node server.js",

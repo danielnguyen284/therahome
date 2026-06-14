@@ -19,8 +19,11 @@ export default function NotificationSettingsPage() {
 
   useEffect(() => {
     if (!user) return;
-    setNotificationsEnabled(user.notifications_enabled !== false);
-    setPreferredTime(user.preferred_time || '20:00');
+    const timeoutId = window.setTimeout(() => {
+      setNotificationsEnabled(user.notifications_enabled !== false);
+      setPreferredTime(user.preferred_time || '20:00');
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
   }, [user]);
 
   const handleSave = async () => {
