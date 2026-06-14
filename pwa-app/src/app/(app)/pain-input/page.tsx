@@ -16,6 +16,16 @@ interface PainLog {
   notes?: string;
 }
 
+interface WorkoutPlan {
+  id: string;
+  title: string;
+  description: string;
+  target_area: string;
+  age_group: string;
+  duration_days: number;
+  is_pro: boolean;
+}
+
 function PainInputContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,23 +38,59 @@ function PainInputContent() {
   const [comparisonLog, setComparisonLog] = useState<PainLog | null>(null);
   const [aiInsight, setAiInsight] = useState('');
 
+  // Resolved Workout Plan States
+  const [resolvedPlanId, setResolvedPlanId] = useState<string | null>(null);
+  const [resolvedArea, setResolvedArea] = useState<string>('full');
+  const [resolvedAreaLabel, setResolvedAreaLabel] = useState<string>('Toàn thân');
+
   // Pre-load today's pain log if exists
   useEffect(() => {
     if (!user) return;
-    const fetchTodayLog = async () => {
+    const fetchData = async () => {
       try {
-        const today = await api.get<PainLog>('/pain-logs/today');
-        if (today) {
-          setSelectedAreas(today.pain_areas || {});
-          setNotes(today.notes || '');
-          setSuccessLog(today);
-          loadComparison(today);
+        const [todayRes, workoutPlansRes] = await Promise.allSettled([
+          api.get<PainLog>('/pain-logs/today'),
+          api.get<WorkoutPlan[]>('/workout-plans'),
+        ]);
+
+        if (todayRes.status === 'fulfilled' && todayRes.value) {
+          setSelectedAreas(todayRes.value.pain_areas || {});
+          setNotes(todayRes.value.notes || '');
+          setSuccessLog(todayRes.value);
+          loadComparison(todayRes.value);
+        }
+
+        if (workoutPlansRes.status === 'fulfilled' && Array.isArray(workoutPlansRes.value)) {
+          const plans = workoutPlansRes.value;
+          const userAge = user.age || 0;
+          const ageGroup = userAge < 45 ? 'young' : 'elder';
+          
+          const focusArea = user.focus_area || '';
+          let targetArea = 'full';
+          let targetAreaLabel = 'Toàn thân';
+          if (focusArea.toLowerCase().includes('cổ') || focusArea.toLowerCase().includes('neck') || focusArea.toLowerCase().includes('vai') || focusArea.toLowerCase().includes('shoulder')) {
+            targetArea = 'neck';
+            targetAreaLabel = 'Cổ vai gáy';
+          } else if (focusArea.toLowerCase().includes('lưng') || focusArea.toLowerCase().includes('back')) {
+            targetArea = 'back';
+            targetAreaLabel = 'Lưng & cột sống';
+          }
+
+          setResolvedArea(targetArea);
+          setResolvedAreaLabel(targetAreaLabel);
+
+          const match = plans.find(p => p.age_group === ageGroup && p.target_area === targetArea);
+          if (match) {
+            setResolvedPlanId(match.id);
+          } else {
+            setResolvedPlanId(plans[0]?.id || null);
+          }
         }
       } catch (err) {
-        console.warn('Failed to load today pain log:', err);
+        console.warn('Failed to load data:', err);
       }
     };
-    fetchTodayLog();
+    fetchData();
   }, [user]);
 
   // Load Yesterday's pain log for comparison
@@ -242,8 +288,10 @@ function PainInputContent() {
               onClick={() => {
                 if (redirectTo) {
                   router.push(redirectTo);
+                } else if (resolvedPlanId) {
+                  router.push(`/workout-plan-detail/${resolvedPlanId}?selectedArea=${resolvedArea}&selectedAreaLabel=${encodeURIComponent(resolvedAreaLabel)}`);
                 } else {
-                  router.push('/workout-plans');
+                  router.push('/home');
                 }
               }}
               className="flex-1 py-3 bg-indigo-600 text-white hover:bg-indigo-700 rounded-2xl font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-100 dark:shadow-none"
