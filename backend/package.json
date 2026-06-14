@@ -8,7 +8,8 @@
   },
   "scripts": {
     "dev": "node --watch server.js",
-    "start": "node server.js",
+    "build": "prisma generate",
+    "start": "npx prisma migrate deploy && node server.js",
     "seed": "node scripts/seedData.js",
     "migrate:onboarding": "node scripts/migrateOnboardingCompleted.js"
   },
