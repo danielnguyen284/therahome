@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: thera_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: thera_db
+    ports:
+      - "54329:5432"
+    volumes:
+      - thera_pgdata:/var/lib/postgresql/data
+    networks:
+      - thera_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: thera_backend
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      - PORT=5001
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/thera_db?schema=public
+      - NODE_ENV=production
+    ports:
+      - "5001:5001"
+    networks:
+      - thera_network
+
+  pwa-app:
+    build:
+      context: ./pwa-app
+      dockerfile: Dockerfile
+    container_name: thera_pwa_app
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - BACKEND_API_URL=http://backend:5001/api
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    networks:
+      - thera_network
+
+  admin-panel:
+    build:
+      context: ./admin-panel
+      dockerfile: Dockerfile
+    container_name: thera_admin_panel
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      - PORT=3001
+      - HOSTNAME=0.0.0.0
+      - NODE_ENV=production
+    ports:
+      - "3001:3001"
+    networks:
+      - thera_network
+
+volumes:
+  thera_pgdata:
+
+networks:
+  thera_network:
+    driver: bridge

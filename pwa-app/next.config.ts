@@ -4,7 +4,7 @@ import path from "path";
 const backendApiUrl = process.env.BACKEND_API_URL || 'http://localhost:5001/api';
 
 const nextConfig: any = {
-  /* config options here */
+  output: 'standalone',
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
