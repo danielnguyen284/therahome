@@ -1,14 +1,19 @@
 import { create } from 'zustand';
 import { storage } from '../lib/storage';
 
+export type FontSize = 'normal' | 'large' | 'extra-large';
+
 interface ThemeState {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   setTheme: (theme: 'light' | 'dark') => void;
+  fontSize: FontSize;
+  setFontSize: (size: FontSize) => void;
 }
 
 export const useThemeStore = create<ThemeState>((set) => ({
   theme: 'light',
+  fontSize: 'large',
   toggleTheme: () => {
     set((state) => {
       const nextTheme = state.theme === 'light' ? 'dark' : 'light';
@@ -33,5 +38,13 @@ export const useThemeStore = create<ThemeState>((set) => ({
       }
     }
     set({ theme });
+  },
+  setFontSize: (fontSize) => {
+    if (typeof window !== 'undefined') {
+      storage.set('therahome_fontsize', fontSize);
+      document.documentElement.classList.remove('font-size-normal', 'font-size-large', 'font-size-extra-large');
+      document.documentElement.classList.add(`font-size-${fontSize}`);
+    }
+    set({ fontSize });
   },
 }));

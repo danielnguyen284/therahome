@@ -11,9 +11,7 @@ import {
   Ruler,
   Scale,
   Target,
-  Dumbbell,
   AlertCircle,
-  Activity,
   Award
 } from 'lucide-react';
 
@@ -31,11 +29,7 @@ export default function EditProfilePage() {
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [targetWeight, setTargetWeight] = useState('');
-  const [primaryGoal, setPrimaryGoal] = useState('');
-  const [focusArea, setFocusArea] = useState('');
-  const [limitations, setLimitations] = useState('');
   const [dietType, setDietType] = useState('');
-  const [occupation, setOccupation] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -45,11 +39,7 @@ export default function EditProfilePage() {
       setHeight(user.height || '');
       setWeight(user.weight || '');
       setTargetWeight(user.target_weight || '');
-      setPrimaryGoal(user.primary_goal || '');
-      setFocusArea(user.focus_area || '');
-      setLimitations(user.limitations || '');
       setDietType(user.diet_type || '');
-      setOccupation(user.occupation || '');
     }
   }, [user]);
 
@@ -77,11 +67,7 @@ export default function EditProfilePage() {
         height: height.trim(),
         weight: weight.trim(),
         target_weight: targetWeight.trim(),
-        primary_goal: primaryGoal.trim(),
-        focus_area: focusArea.trim(),
-        limitations: limitations.trim(),
         diet_type: dietType.trim(),
-        occupation: occupation.trim(),
       });
 
       if (updated) {
@@ -251,77 +237,7 @@ export default function EditProfilePage() {
             />
           </div>
 
-          {/* Primary Goal */}
-          <div className="flex items-center justify-between py-4 gap-4">
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="w-8 h-8 bg-slate-50 dark:bg-slate-950 text-indigo-650 rounded-xl flex items-center justify-center">
-                <Target className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-bold text-slate-800 dark:text-white">Mục tiêu chính</span>
-            </div>
-            <input
-              type="text"
-              value={primaryGoal}
-              onChange={(e) => setPrimaryGoal(e.target.value)}
-              placeholder="Ví dụ: Giảm đau lưng"
-              disabled={loading}
-              className="text-right text-xs bg-transparent border-none outline-none focus:ring-0 text-slate-600 dark:text-slate-300 w-full max-w-xs"
-            />
-          </div>
 
-          {/* Focus Area */}
-          <div className="flex items-center justify-between py-4 gap-4">
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="w-8 h-8 bg-slate-50 dark:bg-slate-950 text-indigo-650 rounded-xl flex items-center justify-center">
-                <Dumbbell className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-bold text-slate-800 dark:text-white">Vùng trọng tâm</span>
-            </div>
-            <input
-              type="text"
-              value={focusArea}
-              onChange={(e) => setFocusArea(e.target.value)}
-              placeholder="Ví dụ: Cổ vai gáy"
-              disabled={loading}
-              className="text-right text-xs bg-transparent border-none outline-none focus:ring-0 text-slate-600 dark:text-slate-300 w-full max-w-xs"
-            />
-          </div>
-
-          {/* Limitations */}
-          <div className="flex items-center justify-between py-4 gap-4">
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="w-8 h-8 bg-slate-50 dark:bg-slate-950 text-indigo-650 rounded-xl flex items-center justify-center">
-                <AlertCircle className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-bold text-slate-800 dark:text-white">Hạn chế vận động</span>
-            </div>
-            <input
-              type="text"
-              value={limitations}
-              onChange={(e) => setLimitations(e.target.value)}
-              placeholder="Ví dụ: Cột sống nhạy cảm"
-              disabled={loading}
-              className="text-right text-xs bg-transparent border-none outline-none focus:ring-0 text-slate-600 dark:text-slate-300 w-full max-w-xs"
-            />
-          </div>
-
-          {/* Occupation */}
-          <div className="flex items-center justify-between py-4 gap-4">
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="w-8 h-8 bg-slate-50 dark:bg-slate-950 text-indigo-650 rounded-xl flex items-center justify-center">
-                <Activity className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-bold text-slate-800 dark:text-white">Nghề nghiệp</span>
-            </div>
-            <input
-              type="text"
-              value={occupation}
-              onChange={(e) => setOccupation(e.target.value)}
-              placeholder="Ví dụ: Lập trình viên"
-              disabled={loading}
-              className="text-right text-xs bg-transparent border-none outline-none focus:ring-0 text-slate-600 dark:text-slate-300 w-full max-w-xs"
-            />
-          </div>
 
         </div>
 

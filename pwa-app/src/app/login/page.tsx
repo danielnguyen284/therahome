@@ -72,7 +72,7 @@ function TypewriterText() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activationCode = searchParams ? searchParams.get('activationCode') : null;
+  const activationCode = null;
   const { setUser } = useAuthStore();
 
   const [isMerging, setIsMerging] = useState(false);
@@ -115,13 +115,13 @@ function LoginForm() {
         setSuccessMsg('Đăng nhập và kích hoạt thiết bị thành công!');
       }
 
-      const targetUrl = (searchParams ? searchParams.get('redirectTo') : null) || '/home';
+      const targetUrl = currentUser.onboarding_completed ? '/activate-device' : '/onboarding/welcome';
       window.setTimeout(() => {
         router.push(targetUrl);
       }, 1100);
     } catch (err) {
       console.error('Login post-processing error:', err);
-      const targetUrl = (searchParams ? searchParams.get('redirectTo') : null) || '/home';
+      const targetUrl = typedAuthResponse.user.onboarding_completed ? '/activate-device' : '/onboarding/welcome';
       router.push(targetUrl);
     } finally {
       setIsMerging(false);
@@ -178,13 +178,6 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/65" />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-[8vw] pb-10 pt-14 md:max-w-[680px] md:px-12 md:pb-14 md:pt-16 lg:max-w-[760px]">
-        <Link
-          href="/onboarding/splash"
-          className="self-start rounded-full bg-white/10 px-4 py-2 text-xs font-bold text-white backdrop-blur-md transition hover:bg-white/20"
-        >
-          Quay lại
-        </Link>
-
         <section className="flex flex-1 flex-col items-center justify-center">
           <div className="mb-4 w-full max-w-[320px] md:max-w-[430px]">
             <Image

@@ -17,11 +17,14 @@ import {
   Shield,
   Moon,
   Volume2,
+  Type,
 } from 'lucide-react';
+import { useThemeStore } from '../../../stores/themeStore';
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
+  const { fontSize, setFontSize } = useThemeStore();
   const [activationCode, setActivationCode] = useState('');
   const [showProModal, setShowProModal] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
@@ -166,9 +169,47 @@ export default function ProfilePage() {
           </button>
         </div>
 
+        {/* Font Size Selector */}
+        <div className="flex flex-col p-4 border-b border-slate-100/30 dark:border-slate-800/30 gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 rounded-xl">
+              <Type className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="block font-bold text-slate-800 dark:text-white text-xs md:text-sm">Cỡ chữ ứng dụng</span>
+              <span className="text-[10px] text-slate-400">Phù hợp cho người lớn tuổi sử dụng</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2 bg-slate-50 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-100/50 dark:border-slate-850">
+            {(['normal', 'large', 'extra-large'] as const).map((size) => {
+              const isActive = fontSize === size;
+              const labels = {
+                'normal': 'Tiêu chuẩn',
+                'large': 'Lớn',
+                'extra-large': 'Rất lớn'
+              };
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => setFontSize(size)}
+                  className={`py-2 px-1 rounded-xl font-bold transition-all text-[11px] text-center ${
+                    isActive
+                      ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm border border-slate-100 dark:border-slate-800'
+                      : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-350'
+                  }`}
+                >
+                  {labels[size]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Change info link */}
         <button
-          onClick={() => router.push('/settings')}
+          onClick={() => router.push('/edit-profile')}
           className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-950 transition-all rounded-2xl text-left"
         >
           <div className="flex items-center gap-3">

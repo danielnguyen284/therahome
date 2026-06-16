@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useThemeStore } from '../stores/themeStore';
@@ -30,6 +30,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const getOnboardingTarget = useCallback(() => {
+    const step = storage.get<string>('therahome_onboarding_step');
+    const blockedSteps = new Set(['splash', 'device-offer', 'login']);
+    if (step && !blockedSteps.has(step)) {
+      return `/onboarding/${step}`;
+    }
+    return '/onboarding/welcome';
+  }, []);
+
   useEffect(() => {
     // Init state
     initializeAuth();
@@ -47,6 +56,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
         document.documentElement.classList.remove('dark');
       }
       useThemeStore.getState().setTheme(initialTheme);
+
+      // Init Font Size
+      const savedFontSize = storage.get<'normal' | 'large' | 'extra-large'>('therahome_fontsize') || 'large';
+      document.documentElement.classList.remove('font-size-normal', 'font-size-large', 'font-size-extra-large');
+      document.documentElement.classList.add(`font-size-${savedFontSize}`);
+      useThemeStore.getState().setFontSize(savedFontSize);
     }
   }, [initializeAuth, loadDraft]);
 
@@ -121,28 +136,47 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading) return;
 
-    const isPublicRoute =
-      pathname === '/login' ||
+    const isLegalPublicRoute =
       pathname === '/about' ||
       pathname === '/terms' ||
-      pathname === '/privacy' ||
-      pathname === '/activate-device' ||
-      pathname === '/auth/google/callback' ||
-      pathname.startsWith('/onboarding');
+      pathname === '/privacy';
+    const isAuthRoute =
+      pathname === '/login' ||
+      pathname === '/auth/google/callback';
+    const isOnboardingRoute = pathname.startsWith('/onboarding');
+    const isActivationRoute = pathname === '/activate-device';
+    const isPublicRoute = isLegalPublicRoute || isAuthRoute;
 
     if (!isAuthenticated && !isPublicRoute) {
-      // Bouncer for protected app pages
-      router.push('/onboarding/splash');
+      router.push('/login');
     } else if (isAuthenticated && user) {
-      // Logged in and normal/pro user
-      if (pathname === '/login' || pathname === '/') {
-        router.push('/home');
-      } else if (user.onboarding_completed && pathname.startsWith('/onboarding')) {
-        // Completed users shouldn't re-onboard
+      if (isAuthRoute || pathname === '/') {
+        router.push(user.onboarding_completed ? '/activate-device' : getOnboardingTarget());
+        return;
+      }
+
+      if (!user.onboarding_completed) {
+        if (!isOnboardingRoute && !isLegalPublicRoute) {
+          router.push(getOnboardingTarget());
+        } else if (pathname === '/onboarding/splash') {
+          router.push(getOnboardingTarget());
+        }
+        return;
+      }
+
+      const hasActivatedProduct = Boolean(user.is_pro || user.owned_devices?.length);
+      if (!hasActivatedProduct) {
+        if (!isActivationRoute && !isLegalPublicRoute) {
+          router.push('/activate-device');
+        }
+        return;
+      }
+
+      if (isOnboardingRoute || isActivationRoute) {
         router.push('/home');
       }
     }
-  }, [isLoading, isAuthenticated, user, pathname, router]);
+  }, [getOnboardingTarget, isLoading, isAuthenticated, user, pathname, router]);
 
   return <>{children}</>;
 }

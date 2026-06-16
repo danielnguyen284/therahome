@@ -32,7 +32,6 @@ import {
   Clock,
   DollarSign,
   Footprints,
-  Gift,
   Goal,
   GraduationCap,
   Hammer,
@@ -65,16 +64,9 @@ import {
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import type { GuestProfile } from '../../stores/onboardingStore';
 import { useAuthStore } from '../../stores/authStore';
+import { updateProfile } from '../../services/auth';
 import { api } from '../../lib/api';
 import { storage } from '../../lib/storage';
-
-interface Product {
-  id: string;
-  key: string;
-  name: string;
-  image_url: string;
-  purchase_link: string;
-}
 
 interface Review {
   id: string;
@@ -107,7 +99,6 @@ const FLOW = [
   'method-effectiveness',
   'ai-analysing',
   'warning',
-  'thera-home',
   'exercise-time',
   'name',
   'age',
@@ -117,8 +108,6 @@ const FLOW = [
   'reviews',
   'best-version',
   'plan-ready',
-  'device-offer',
-  'special-offer',
 ] as const;
 
 type StepId = (typeof FLOW)[number];
@@ -802,7 +791,7 @@ function WarningScreen() {
             </div>
           ))}
         </div>
-        <PrimaryButton onClick={() => smoothPush(router, '/onboarding/thera-home')}>
+        <PrimaryButton onClick={() => smoothPush(router, '/onboarding/exercise-time')}>
           CẢI THIỆN NGAY
         </PrimaryButton>
       </div>
@@ -810,55 +799,7 @@ function WarningScreen() {
   );
 }
 
-function TheraHomeScreen() {
-  const router = useRouter();
-  const labels = [
-    { text: 'Lộ trình riêng', className: 'left-[6%] top-[30%]' },
-    { text: 'Giảm đau tức thì', className: 'right-[6%] top-[25%]' },
-    { text: 'Chi phí thấp', className: 'left-[8%] top-[52%]' },
-    { text: 'Ngay tại nhà', className: 'right-[8%] top-[46%]' },
-  ];
 
-  return (
-    <main className="onboarding-screen relative min-h-screen overflow-hidden bg-black text-white">
-      <Image src="/images/thera-home-bg.png" alt="" fill priority className="object-cover" />
-      <div className="absolute inset-0 bg-black/28" />
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-6 pb-8 pt-14 md:max-w-[700px] md:px-12 md:pt-20">
-        <header>
-          <h1 className="text-[31px] font-extrabold leading-[42px] drop-shadow md:text-[42px] md:leading-[56px]">
-            <span className="font-serif italic font-medium">Thera</span>
-            <span className="text-[#60A5FA]">HOME</span> là sự lựa chọn<br />hoàn hảo dành cho bạn
-          </h1>
-          <div className="mt-3 h-1 w-28 rounded-full bg-[#3B82F6]" />
-          <p className="mt-5 max-w-[520px] text-lg font-bold leading-7 drop-shadow md:text-2xl md:leading-9">
-            Cá nhân hóa lộ trình bằng AI theo bệnh lý của bạn
-          </p>
-        </header>
-        <div className="relative flex-1">
-          {labels.map((label, index) => {
-            const floatStyle = {
-              '--float-delay': `${index * 360}ms`,
-              '--shine-delay': `${900 + index * 520}ms`,
-              '--float-x': index % 2 === 0 ? '5px' : '-5px',
-              '--float-y': index % 2 === 0 ? '-9px' : '7px',
-            } as CSSProperties;
-
-            return (
-              <div
-                key={label.text}
-                className={`thera-floating-label absolute overflow-hidden rounded-2xl bg-white/20 px-4 py-3 text-sm font-extrabold shadow-lg ring-1 ring-white/35 backdrop-blur-md md:text-lg ${label.className}`}
-                style={floatStyle}
-              >
-                <span className="relative z-10">{label.text}</span>
-              </div>
-            );
-          })}
-        </div>
-        <PrimaryButton onClick={() => smoothPush(router, '/onboarding/exercise-time')} />
-      </div>
-    </main>
-  );
-}
 
 function AnalysingScreen() {
   const router = useRouter();
@@ -983,7 +924,7 @@ function ExerciseTimeScreen() {
               {notificationsEnabled ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
             </span>
             <span>
-              <span className="block text-base font-black">Nhắc nhở tập luyện</span>
+              <span className="block text-base font-black">Nhắc nhở trị liệu</span>
               <span className="mt-1 block text-sm font-semibold text-slate-500">
                 {notificationsEnabled ? 'Đang bật, gửi 1 lần mỗi ngày' : 'Đang tắt thông báo tập luyện'}
               </span>
@@ -1183,8 +1124,36 @@ function DiscoveryScreen({ reviews }: { reviews: Review[] }) {
 
 function PlanReadyScreen() {
   const router = useRouter();
-  const { draft } = useOnboardingStore();
+  const { draft, clearDraft, updateDraft } = useOnboardingStore();
+  const { isAuthenticated, user, setUser } = useAuthStore();
+  const [loading, setLoading] = useState(false);
   const days = Array.from({ length: 14 }, (_, index) => index + 1);
+
+  const handleFinish = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      if (isAuthenticated && user && user.id !== 'guest') {
+        const updatedUser = await updateProfile({
+          ...draft,
+          onboarding_completed: true,
+        });
+        setUser(updatedUser);
+        clearDraft();
+        smoothPush(router, '/activate-device');
+      } else {
+        updateDraft({ onboarding_completed: true });
+        smoothPush(router, '/login');
+      }
+    } catch (err) {
+      console.error('Failed to complete onboarding:', err);
+      // Fallback in case of server error
+      smoothPush(router, '/activate-device');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ScreenFrame>
       <div className="overflow-y-auto pb-4">
@@ -1225,11 +1194,13 @@ function PlanReadyScreen() {
               </div>
             ))}
           </div>
-          <div className="mx-auto mb-4 w-[72%] max-w-[320px] rounded-3xl bg-white p-3 shadow-sm">
-            <Image src="/images/lay-lo-trinh.png" alt="Lộ trình cá nhân hóa" width={360} height={220} className="h-auto w-full object-contain" />
-          </div>
-          <button onClick={() => smoothPush(router, '/onboarding/device-offer')} className="mx-4 mb-4 h-[58px] w-[calc(100%-2rem)] rounded-full bg-[#3B82F6] text-[22px] font-black text-white shadow-lg">
-            LẤY LỘ TRÌNH
+
+          <button 
+            onClick={handleFinish} 
+            disabled={loading}
+            className="mx-4 mb-4 h-[58px] w-[calc(100%-2rem)] rounded-full bg-[#3B82F6] text-[22px] font-black text-white shadow-lg flex items-center justify-center disabled:opacity-75"
+          >
+            {loading ? 'ĐANG XỬ LÝ...' : 'LẤY LỘ TRÌNH'}
           </button>
         </section>
       </div>
@@ -1237,73 +1208,6 @@ function PlanReadyScreen() {
   );
 }
 
-const fallbackProductByKey: Record<'ech' | 'rung', Product> = {
-  ech: {
-    id: 'fallback-neck',
-    key: 'ech',
-    name: 'TheraNECK',
-    image_url: '/images/anh-sp-theraneck.png',
-    purchase_link: '',
-  },
-  rung: {
-    id: 'fallback-back',
-    key: 'rung',
-    name: 'TheraBACK',
-    image_url: '/images/theraback.png',
-    purchase_link: '',
-  },
-};
-
-const getRecommendedProduct = (focusArea: string, productsList: Product[]) => {
-  const normalizedArea = (focusArea || '').toLowerCase();
-  const isBack = normalizedArea.includes('lưng') || normalizedArea.includes('back');
-  const targetKey = isBack ? 'rung' : 'ech';
-  const found = productsList.find((product) => {
-    const key = product.key?.toLowerCase();
-    const name = product.name?.toLowerCase();
-    return key === targetKey || (isBack ? name?.includes('back') : name?.includes('neck'));
-  });
-  const fallback = fallbackProductByKey[targetKey];
-
-  return {
-    ...fallback,
-    ...found,
-    name: found?.name?.trim() || fallback.name,
-    image_url: found?.image_url?.trim() || fallback.image_url,
-    purchase_link: found?.purchase_link?.trim() || '',
-  };
-};
-
-function DeviceOfferScreen({ products }: { products: Product[] }) {
-  const router = useRouter();
-  const { draft } = useOnboardingStore();
-  const { isAuthenticated } = useAuthStore();
-  const recommended = useMemo(() => getRecommendedProduct(draft.focus_area, products), [draft.focus_area, products]);
-  const isBack = recommended.key === 'rung';
-
-  return (
-    <ScreenFrame>
-      <div className="flex flex-1 flex-col items-center pt-10 text-center">
-        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-[#3B82F6] shadow-sm">
-          <PackageCheck className="h-8 w-8" />
-        </div>
-        <h1 className="text-2xl font-bold leading-[34px] text-black">
-          Để đạt hiệu quả tối đa, bạn<br />hãy sử dụng thêm thiết bị<br />hỗ trợ dưới đây:
-        </h1>
-        <div className="flex flex-1 flex-col items-center justify-center">
-          <Image src={recommended.image_url} alt={recommended.name} width={420} height={420} className="h-auto w-[72vw] max-w-[330px] object-contain md:max-w-[420px]" />
-          <p className="mt-3 text-lg font-medium text-slate-700">
-            Thiết bị hỗ trợ cải thiện {isBack ? 'lưng' : 'cổ'} {recommended.name}
-          </p>
-        </div>
-        <div className="mx-auto w-full max-w-[430px] space-y-4 pb-2 md:max-w-[480px]">
-          <button onClick={() => smoothPush(router, isAuthenticated ? '/activate-device' : '/login?redirectTo=/activate-device')} className="h-[58px] w-full rounded-full bg-[#3B82F6] text-xl font-bold text-white shadow-lg">Tôi đã có thiết bị</button>
-          <button onClick={() => smoothPush(router, '/onboarding/special-offer')} className="h-[58px] w-full rounded-full bg-red-500 text-xl font-bold text-white shadow-lg">Nhận ưu đãi</button>
-        </div>
-      </div>
-    </ScreenFrame>
-  );
-}
 
 function ReviewsScreen({ reviews }: { reviews: Review[] }) {
   const router = useRouter();
@@ -1391,146 +1295,10 @@ function BestVersionScreen() {
   );
 }
 
-const PRODUCT_PRICES: Record<string, { original: string; offer: string; discount: string }> = {
-  rung: {
-    original: '1.690.000đ',
-    offer: '990.000đ',
-    discount: '41%',
-  },
-  ech: {
-    original: '1.490.000đ',
-    offer: '990.000đ',
-    discount: '34%',
-  }
-};
-
-function SpecialOfferScreen({ products }: { products: Product[] }) {
-  const router = useRouter();
-  const { draft } = useOnboardingStore();
-  const { isAuthenticated } = useAuthStore();
-  const recommended = useMemo(() => getRecommendedProduct(draft.focus_area, products), [draft.focus_area, products]);
-  const hasPurchaseLink = Boolean(recommended.purchase_link?.trim());
-  const priceInfo = PRODUCT_PRICES[recommended.key] || PRODUCT_PRICES.rung;
-
-  const handleOpenLink = () => {
-    if (!hasPurchaseLink) return;
-    window.open(recommended.purchase_link.trim(), '_blank', 'noopener,noreferrer');
-  };
-
-  return (
-    <ScreenFrame pale>
-      <style>{`
-        @keyframes shine-sweep {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        .animate-shine-sweep {
-          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-          background-size: 200% 100%;
-          animation: shine-sweep 4s infinite linear;
-        }
-      `}</style>
-
-      <div className="flex flex-1 flex-col items-center justify-between py-4 px-2 text-center">
-        {/* Header Title */}
-        <div className="mt-2">
-          <span className="inline-block px-3 py-1 rounded-full bg-blue-50 text-[11px] font-black uppercase tracking-widest text-[#3B82F6] ring-1 ring-blue-100">
-            Ưu đãi giới hạn
-          </span>
-          <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900">
-            Mở Khóa Lộ Trình Cùng <span className="text-red-500">{recommended.name}</span>
-          </h1>
-          <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-500 max-w-[280px] mx-auto">
-            Hỗ trợ cột sống, tăng hiệu quả giảm đau gấp 3 lần tại nhà
-          </p>
-        </div>
-
-        {/* Unified Premium Voucher Ticket Card */}
-        <div className="my-auto w-full max-w-[340px] relative transition-transform duration-300 hover:scale-[1.02]">
-          {/* Outer glow aura */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 rounded-[32px] blur-xl opacity-45 animate-pulse" />
-          
-          {/* Main Ticket */}
-          <div className="relative bg-white rounded-[28px] overflow-hidden shadow-2xl border border-slate-100 flex flex-col">
-            
-            {/* Top portion (Product Showcase) */}
-            <div className="relative bg-gradient-to-b from-slate-50 to-white px-6 pt-6 pb-4 flex flex-col items-center">
-              {/* Product render */}
-              <div className="relative w-44 h-44 flex items-center justify-center mix-blend-multiply drop-shadow-md">
-                <Image 
-                  src={recommended.image_url} 
-                  alt={recommended.name} 
-                  fill
-                  priority
-                  className="object-contain"
-                />
-              </div>
-            </div>
-
-            {/* Dash line divider with tickets cutouts */}
-            <div className="relative flex items-center justify-center my-1 px-4">
-              {/* Left cutout circle mask */}
-              <div className="absolute -left-[14px] w-7 h-7 rounded-full bg-slate-100 border-r border-slate-200/50 shadow-inner z-10" />
-              {/* Right cutout circle mask */}
-              <div className="absolute -right-[14px] w-7 h-7 rounded-full bg-slate-100 border-l border-slate-200/50 shadow-inner z-10" />
-              {/* Dash line */}
-              <div className="w-full border-t-2 border-dashed border-slate-200" />
-            </div>
-
-            {/* Bottom portion (Offer Details & Price) */}
-            <div className="bg-gradient-to-tr from-rose-500 via-red-500 to-amber-500 px-6 py-6 text-white text-center relative overflow-hidden">
-              {/* Shine sweep overlay */}
-              <div className="absolute inset-0 animate-shine-sweep pointer-events-none" />
-
-              <span className="text-[11px] font-black tracking-widest bg-white/20 text-white px-3 py-1 rounded-full uppercase inline-block mb-2">
-                Quà tặng đi kèm lộ trình
-              </span>
-
-              <div className="text-5xl font-black tracking-tighter drop-shadow-md mb-2">
-                Giảm {priceInfo.discount}
-              </div>
-
-              {/* Price Details */}
-              <div className="flex flex-col items-center justify-center mt-2">
-                <div className="flex items-baseline justify-center gap-2">
-                  <span className="text-sm font-bold text-white/70 line-through">{priceInfo.original}</span>
-                  <span className="text-3xl font-extrabold tracking-tight">{priceInfo.offer}</span>
-                </div>
-                <p className="text-xs font-bold text-amber-200 mt-1">
-                  Dành riêng cho người mới
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="w-full max-w-[430px] space-y-4 pb-2 md:max-w-[480px]">
-          <button 
-            onClick={handleOpenLink} 
-            disabled={!hasPurchaseLink}
-            className="h-[58px] w-full rounded-full bg-red-500 hover:bg-red-600 active:scale-[0.99] text-xl font-black text-white shadow-xl shadow-red-200 disabled:bg-slate-300 disabled:shadow-none transition-all flex items-center justify-center gap-2"
-          >
-            TIẾP TỤC
-          </button>
-          
-          <button 
-            onClick={() => smoothPush(router, isAuthenticated ? '/activate-device' : '/login?redirectTo=/activate-device')} 
-            className="h-[54px] w-full rounded-full border-2 border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.99] text-base font-extrabold text-slate-700 transition-all flex items-center justify-center gap-2"
-          >
-            Tôi đã có thiết bị (Kích hoạt ngay)
-          </button>
-        </div>
-      </div>
-    </ScreenFrame>
-  );
-}
-
 export function OnboardingFlow({ step }: { step: string }) {
   const normalized = (FLOW as readonly string[]).includes(step) ? step : 'splash';
   const router = useRouter();
-  const { updateDraft, setCurrentStep, products, setProducts } = useOnboardingStore();
+  const { updateDraft, setCurrentStep } = useOnboardingStore();
   const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
@@ -1542,17 +1310,6 @@ export function OnboardingFlow({ step }: { step: string }) {
 
   useEffect(() => {
     let active = true;
-    if (products.length === 0) {
-      void api.get<Product[]>('/products')
-        .then((data) => {
-          if (active && Array.isArray(data)) {
-            setProducts(data);
-          }
-        })
-        .catch((err) => {
-          console.warn('Failed to load products in onboarding:', err);
-        });
-    }
     void api.get<Review[]>('/reviews')
       .then((data) => {
         if (active && Array.isArray(data)) {
@@ -1592,8 +1349,6 @@ export function OnboardingFlow({ step }: { step: string }) {
       case 'ai-analysing': return <AnalysingScreen />;
       case 'warning':
         return <WarningScreen />;
-      case 'thera-home':
-        return <TheraHomeScreen />;
       case 'exercise-time':
         return <ExerciseTimeScreen />;
       case 'name':
@@ -1609,26 +1364,9 @@ export function OnboardingFlow({ step }: { step: string }) {
       case 'reviews': return <ReviewsScreen reviews={reviews} />;
       case 'best-version': return <BestVersionScreen />;
       case 'plan-ready': return <PlanReadyScreen />;
-      case 'device-offer': return <DeviceOfferScreen products={products} />;
-      case 'special-offer': return <SpecialOfferScreen products={products} />;
       default: return <SplashScreen />;
     }
-  }, [normalized, products, reviews]);
-
-  const finishDraft = () => {
-    updateDraft({ onboarding_completed: true });
-    setCurrentStep('login');
-    smoothPush(router, '/login');
-  };
-
-  if (normalized === 'special-offer') {
-    return (
-      <div>
-        {screen}
-        <button type="button" onClick={finishDraft} className="sr-only">Finish onboarding</button>
-      </div>
-    );
-  }
+  }, [normalized, reviews]);
 
   return screen;
 }

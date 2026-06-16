@@ -34,6 +34,20 @@ interface ReviewForm {
   content: string;
   author_name: string;
   badge: string;
+  created_at: string;
+}
+
+function formatToDatetimeLocal(dateStr?: string): string {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const yyyy = date.getFullYear();
+  const mm = pad(date.getMonth() + 1);
+  const dd = pad(date.getDate());
+  const hh = pad(date.getHours());
+  const min = pad(date.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
 }
 
 const REVIEWABLE_KEYS = new Set(['ech', 'rung']);
@@ -44,6 +58,7 @@ const EMPTY_FORM: ReviewForm = {
   content: '',
   author_name: 'TheraHome',
   badge: '',
+  created_at: '',
 };
 
 export default function ProductReviewsPage() {
@@ -110,6 +125,7 @@ export default function ProductReviewsPage() {
     setForm({
       ...EMPTY_FORM,
       product_id: reviewableProducts[0]?.id || '',
+      created_at: formatToDatetimeLocal(new Date().toISOString()),
     });
     setShowModal(true);
   };
@@ -122,6 +138,7 @@ export default function ProductReviewsPage() {
       content: item.content,
       author_name: item.author_name || 'TheraHome',
       badge: item.badge || '',
+      created_at: formatToDatetimeLocal(item.created_at),
     });
     setShowModal(true);
   };
@@ -151,13 +168,17 @@ export default function ProductReviewsPage() {
 
     try {
       setSaving(true);
-      const payload = {
+      const payload: any = {
         product_id: form.product_id,
         author_name: form.author_name.trim() || 'TheraHome',
         rating: Number(form.rating),
         content: form.content.trim(),
         badge: form.badge.trim(),
       };
+
+      if (form.created_at) {
+        payload.created_at = new Date(form.created_at).toISOString();
+      }
 
       if (editingItem) {
         await api.put(`/product-reviews/${editingItem.id}`, payload);
@@ -368,6 +389,16 @@ export default function ProductReviewsPage() {
               onChange={(event) => setForm((prev) => ({ ...prev, author_name: event.target.value }))}
               className="input"
               placeholder="Nhập tên người đánh giá..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Thời gian đánh giá</label>
+            <input
+              type="datetime-local"
+              value={form.created_at}
+              onChange={(event) => setForm((prev) => ({ ...prev, created_at: event.target.value }))}
+              className="input"
             />
           </div>
 

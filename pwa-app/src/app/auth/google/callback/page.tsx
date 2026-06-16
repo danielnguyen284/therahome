@@ -4,15 +4,9 @@ import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, XCircle } from 'lucide-react';
-import { api } from '../../../../lib/api';
 import { storage } from '../../../../lib/storage';
-import { getProfile, updateProfile, type User } from '../../../../services/auth';
+import { getProfile } from '../../../../services/auth';
 import { useAuthStore } from '../../../../stores/authStore';
-import { GuestProfile, useOnboardingStore } from '../../../../stores/onboardingStore';
-
-type ActivationResponse = {
-  user?: User;
-};
 
 function GoogleCallbackContent() {
   const router = useRouter();
@@ -40,7 +34,7 @@ function GoogleCallbackContent() {
                 setUser(profile);
                 setStatus('success');
                 setMessage('Đăng nhập Google thành công!');
-                const targetUrl = searchParams.get('redirectTo') || '/home';
+                const targetUrl = profile.onboarding_completed ? '/activate-device' : '/onboarding/welcome';
                 router.replace(targetUrl);
               }
               return;
@@ -70,42 +64,14 @@ function GoogleCallbackContent() {
           throw new Error('Không tải được hồ sơ người dùng');
         }
 
-        let currentUser = profile;
-        setUser(currentUser);
-
-        const activationCode = searchParams.get('activationCode');
-        if (activationCode) {
-          try {
-            const activateResponse = await api.post<ActivationResponse>('/codes/activate', { code: activationCode });
-            if (activateResponse?.user) {
-              currentUser = activateResponse.user;
-              setUser(currentUser);
-            }
-          } catch (err) {
-            console.error('Activate device after Google login error:', err);
-          }
-        }
-
-        const draft = storage.get<GuestProfile>('therahome_onboarding_draft');
-        if (draft && !currentUser.onboarding_completed) {
-          try {
-            currentUser = await updateProfile({
-              ...draft,
-              onboarding_completed: true,
-            });
-            setUser(currentUser);
-            useOnboardingStore.getState().clearDraft();
-          } catch (err) {
-            console.error('Sync onboarding profile after Google login error:', err);
-          }
-        }
+        setUser(profile);
 
         if (!isMounted) return;
 
         setStatus('success');
         setMessage('Đăng nhập Google thành công!');
 
-        const targetUrl = searchParams.get('redirectTo') || '/home';
+        const targetUrl = profile.onboarding_completed ? '/activate-device' : '/onboarding/welcome';
         window.setTimeout(() => {
           router.replace(targetUrl);
         }, 700);

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '../../../stores/authStore';
 import { api } from '../../../lib/api';
-import { ArrowLeft, Play, Pause, RotateCcw, RotateCw, CheckCircle2, ChevronRight, Volume2 } from 'lucide-react';
+import { ArrowLeft, Play, CheckCircle2 } from 'lucide-react';
 
 interface PainLog {
   pain_areas?: Record<string, number>;
@@ -279,131 +279,81 @@ export default function WorkoutSequencePage() {
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6">
-      
-      {/* Header toolbar */}
-      <div className="flex justify-between items-center">
-        <button
-          onClick={() => router.back()}
-          className="w-10 h-10 border border-slate-100 dark:border-slate-800 rounded-2xl flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-900 transition-all text-slate-700 dark:text-slate-350"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div>
-          <h1 className="text-sm font-black text-slate-850 dark:text-white text-center">
-            Đang phục hồi • Ngày {day}
-          </h1>
-          <p className="text-[10px] text-slate-405 dark:text-slate-400 text-center mt-0.5">
-            Lộ trình điều trị công nghệ cao Thera
-          </p>
-        </div>
-        <div className="w-10"></div>
-      </div>
-
-      {/* Video Container */}
-      <div className="relative aspect-video w-full bg-black rounded-3xl overflow-hidden shadow-lg border border-slate-900 md:rounded-[2rem]">
-        {isYoutube && youtubeId ? (
-          <iframe
-            className="w-full h-full"
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&rel=0&modestbranding=1`}
-            title={currentExercise.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
-        ) : (
-          <video
-            ref={videoRef}
-            src={resolvedVideoUrl}
-            className="w-full h-full object-cover"
-            onTimeUpdate={handleTimeUpdate}
-            onLoadedMetadata={handleLoadedMetadata}
-            onEnded={handleVideoEnded}
-            autoPlay
-            playsInline
-          />
-        )}
-      </div>
-
-      {/* Progress & Controls - Only show custom controls for HTML5 videos */}
-      {!isYoutube && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4">
-          
-          {/* Progress row */}
-          <div className="space-y-1">
-            <div className="flex justify-between text-[10px] font-bold text-slate-450 dark:text-slate-500">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
-            
-            <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
-              <div
-                className="h-full bg-indigo-600 rounded-full transition-all"
-                style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
-              ></div>
-            </div>
-          </div>
-
-          {/* Buttons Row */}
-          <div className="flex items-center justify-center gap-6">
-            <button
-              onClick={() => handleSeek(-10)}
-              className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-350 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-100 dark:border-slate-850"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={togglePlay}
-              className="w-14 h-14 rounded-full bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 shadow-md shadow-indigo-100 dark:shadow-none"
-            >
-              {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current ml-1" />}
-            </button>
-
-            <button
-              onClick={() => handleSeek(10)}
-              className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-350 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-100 dark:border-slate-850"
-            >
-              <RotateCw className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+    <div className="landscape-video-container relative select-none">
+      {/* Video element / iframe */}
+      {isYoutube && youtubeId ? (
+        <iframe
+          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&rel=0&modestbranding=1`}
+          title={currentExercise.title}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      ) : (
+        <video
+          ref={videoRef}
+          src={resolvedVideoUrl || ''}
+          className="w-full h-full object-contain"
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={handleVideoEnded}
+          autoPlay
+          playsInline
+        />
       )}
 
-      {/* Routine Detail Box */}
-      <div className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4">
-        <div>
-          <span className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400">Động tác hiện tại</span>
-          <h2 className="text-base font-black text-slate-800 dark:text-white mt-0.5">{currentExercise.title}</h2>
-        </div>
-
-        <div className="flex gap-4 text-xs">
-          <div className="flex-1 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-850 rounded-2xl p-3 text-center">
-            <p className="text-slate-400 text-[10px]">Thời lượng đề xuất</p>
-            <p className="text-sm font-black text-slate-850 dark:text-slate-205 mt-1">{currentExercise.duration}s</p>
-          </div>
-          <div className="flex-1 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-850 rounded-2xl p-3 text-center">
-            <p className="text-slate-400 text-[10px]">Thiết bị hỗ trợ</p>
-            <p className="text-sm font-black text-indigo-600 dark:text-indigo-400 mt-1">Xung điện Thera</p>
-          </div>
-        </div>
-
-        <button
-          onClick={handleComplete}
-          disabled={submitting}
-          className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-50 dark:shadow-none transition-all disabled:opacity-50"
-        >
-          {submitting ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+      {/* Play/Pause tap overlays for HTML5 video */}
+      {!isYoutube && (
+        <>
+          {!isPlaying ? (
+            <button
+              onClick={togglePlay}
+              className="absolute inset-0 m-auto z-40 w-16 h-16 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-all border border-white/20 shadow-xl"
+            >
+              <Play className="w-8 h-8 fill-current ml-1" />
+            </button>
           ) : (
-            <>
-              <CheckCircle2 className="w-4 h-4" />
-              Hoàn thành phiên tập & Nhận gợi ý
-            </>
+            <div
+              onClick={togglePlay}
+              className="absolute inset-0 z-30 cursor-pointer"
+            />
           )}
-        </button>
+        </>
+      )}
+
+      {/* Floating Back Button */}
+      <button
+        onClick={() => router.back()}
+        className="absolute top-4 left-4 z-50 w-10 h-10 rounded-full bg-black/60 hover:bg-black/85 border border-white/25 flex items-center justify-center text-white transition-all shadow-lg backdrop-blur-sm"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </button>
+
+      {/* Floating Title Badge */}
+      <div className="absolute top-4 right-4 z-50 bg-black/60 px-4 py-2.5 rounded-2xl border border-white/15 max-w-[50vw] backdrop-blur-sm pointer-events-none">
+        <p className="text-[9px] text-indigo-400 font-black uppercase tracking-wider">Đang trị liệu • Ngày {day}</p>
+        <h2 className="text-xs font-black text-white truncate mt-0.5">{currentExercise.title}</h2>
       </div>
 
+      {/* Floating Done Button */}
+      <button
+        onClick={handleComplete}
+        disabled={submitting}
+        className={`absolute bottom-4 right-4 z-50 px-6 py-3.5 rounded-2xl font-bold text-xs flex items-center gap-2 shadow-lg transition-all backdrop-blur-sm ${
+          videoCompleted || !isPlaying
+            ? 'bg-emerald-500 hover:bg-emerald-600 text-white border border-emerald-400'
+            : 'bg-white/20 hover:bg-white/35 text-white border border-white/15'
+        }`}
+      >
+        {submitting ? (
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <>
+            <CheckCircle2 className="w-4 h-4" />
+            {videoCompleted ? 'Hoàn thành' : 'Bỏ qua bài tập'}
+          </>
+        )}
+      </button>
     </div>
   );
 }

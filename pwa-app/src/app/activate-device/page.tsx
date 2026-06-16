@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../stores/authStore';
 import { api } from '../../lib/api';
-import { ArrowLeft, Camera, Keyboard, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+import { Camera, Keyboard, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ActivateDevicePage() {
@@ -85,16 +85,7 @@ export default function ActivateDevicePage() {
 
     // If user is guest/unlogged
     if (!user || user.id === 'guest') {
-      try {
-        await api.post('/codes/validate', { code: normalizedCode });
-        setSuccessMsg('Mã hợp lệ! Đang chuyển hướng đăng nhập...');
-        setTimeout(() => {
-          router.replace(`/login?activationCode=${normalizedCode}`);
-        }, 1500);
-      } catch (error: any) {
-        setErrorMsg(error?.data?.error || 'Mã không hợp lệ hoặc chưa được kích hoạt.');
-        setLoading(false);
-      }
+      router.replace('/login');
       return;
     }
 
@@ -121,14 +112,6 @@ export default function ActivateDevicePage() {
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950 p-4">
-      {/* Back to Home/Splash */}
-      <button
-        onClick={() => router.back()}
-        className="absolute top-6 left-6 flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md text-slate-700 dark:text-slate-300 hover:scale-105 transition-all"
-      >
-        <ArrowLeft className="w-5 h-5" />
-      </button>
-
       <div className="w-full max-w-md md:max-w-2xl bg-white dark:bg-slate-900 shadow-xl rounded-3xl border border-slate-100 dark:border-slate-800 p-6 md:p-10 flex flex-col items-center">
         
         {/* Title */}

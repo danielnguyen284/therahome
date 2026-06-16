@@ -82,7 +82,7 @@ export default function NotificationSettingsPage() {
               {notificationsEnabled ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
             </span>
             <span>
-              <span className="block text-sm font-black">Nhắc nhở tập luyện</span>
+              <span className="block text-sm font-black">Nhắc nhở trị liệu</span>
               <span className="mt-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {notificationsEnabled ? 'Đang bật, gửi 1 thông báo mỗi ngày' : 'Đang tắt'}
               </span>

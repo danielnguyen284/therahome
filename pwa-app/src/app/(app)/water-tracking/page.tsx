@@ -168,9 +168,9 @@ export default function WaterTrackingPage() {
         <button
           onClick={() => handleChange(-1)}
           disabled={cups <= 0}
-          className="w-12 h-12 rounded-full border border-slate-100 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-950 transition-all disabled:opacity-50 text-slate-700 dark:text-slate-400"
+          className="w-12 h-12 rounded-full border border-slate-100 dark:border-slate-800 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-950 transition-all disabled:opacity-50 text-slate-700 dark:text-slate-200"
         >
-          <Minus className="w-5 h-5" />
+          <Minus className="w-5 h-5" strokeWidth={3} />
         </button>
 
         {/* Circular gauge */}
@@ -208,7 +208,7 @@ export default function WaterTrackingPage() {
           onClick={() => handleChange(1)}
           className="w-12 h-12 rounded-full bg-sky-500 text-white flex items-center justify-center hover:bg-sky-600 transition-all shadow-md shadow-sky-100 dark:shadow-none"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-5 h-5" strokeWidth={3} />
         </button>
       </div>
 

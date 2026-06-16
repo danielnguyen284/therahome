@@ -33,13 +33,20 @@ function serializeProductReview(item, viewerId = null) {
 }
 
 function normalizeAdminPayload(body = {}) {
-  return {
+  const data = {
     product_id: body.product_id,
     author_name: typeof body.author_name === 'string' ? body.author_name.trim() : '',
     rating: Number(body.rating),
     content: typeof body.content === 'string' ? body.content.trim() : '',
     badge: typeof body.badge === 'string' ? body.badge.trim() : '',
   };
+  if (body.created_at) {
+    const parsedDate = new Date(body.created_at);
+    if (!isNaN(parsedDate.getTime())) {
+      data.created_at = parsedDate;
+    }
+  }
+  return data;
 }
 
 function normalizePrivatePayload(body = {}) {

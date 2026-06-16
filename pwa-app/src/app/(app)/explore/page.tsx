@@ -130,16 +130,24 @@ export default function ExplorePage() {
             <div className="p-6">
               <h2 className="text-lg font-bold text-slate-850 dark:text-white">TheraNECK</h2>
               <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-2 leading-relaxed">
-                Thiết bị giãn cơ, kích hoạt lưu thông máu vùng cổ vai gáy. Hỗ trợ giảm mỏi cơ sâu do ngồi sai tư thế làm việc dài ngày.
+                {neckProduct?.description || 'Thiết bị giãn cơ, kích hoạt lưu thông máu vùng cổ vai gáy. Hỗ trợ giảm mỏi cơ sâu do ngồi sai tư thế làm việc dài ngày.'}
               </p>
             </div>
           </div>
 
           <div className="p-6 pt-0">
             {hasNeckDevice ? (
-              <div className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-emerald-600 text-white text-xs font-bold shadow-md shadow-emerald-100 dark:shadow-none">
-                <Check className="w-4 h-4 stroke-[3]" />
-                Đã kích hoạt thiết bị
+              <div className="flex gap-3 w-full">
+                <div className="flex-1 flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  Đã kích hoạt
+                </div>
+                <button
+                  onClick={() => router.push(`/product-assessments?product_id=${neckProduct?.id || 'ech'}&write=true`)}
+                  className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all text-center flex items-center justify-center gap-1 shadow-lg shadow-indigo-100 dark:shadow-none cursor-pointer"
+                >
+                  Gửi đánh giá
+                </button>
               </div>
             ) : (
               <div className="flex gap-3">
@@ -195,16 +203,24 @@ export default function ExplorePage() {
             <div className="p-6">
               <h2 className="text-lg font-bold text-slate-850 dark:text-white">TheraBACK</h2>
               <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-2 leading-relaxed">
-                Thiết bị massage thắt lưng với nhiệt trị liệu hồng ngoại. Giúp kéo giãn cơ lưng thắt lưng, phục hồi đường cong cột sống tự nhiên.
+                {backProduct?.description || 'Thiết bị massage thắt lưng với nhiệt trị liệu hồng ngoại. Giúp kéo giãn cơ lưng thắt lưng, phục hồi đường cong cột sống tự nhiên.'}
               </p>
             </div>
           </div>
 
           <div className="p-6 pt-0">
             {hasBackDevice ? (
-              <div className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-emerald-600 text-white text-xs font-bold shadow-md shadow-emerald-100 dark:shadow-none">
-                <Check className="w-4 h-4 stroke-[3]" />
-                Đã kích hoạt thiết bị
+              <div className="flex gap-3 w-full">
+                <div className="flex-1 flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  Đã kích hoạt
+                </div>
+                <button
+                  onClick={() => router.push(`/product-assessments?product_id=${backProduct?.id || 'rung'}&write=true`)}
+                  className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all text-center flex items-center justify-center gap-1 shadow-lg shadow-indigo-100 dark:shadow-none cursor-pointer"
+                >
+                  Gửi đánh giá
+                </button>
               </div>
             ) : (
               <div className="flex gap-3">

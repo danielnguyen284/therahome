@@ -56,6 +56,18 @@ body {
   overflow-x: hidden;
 }
 
+html.font-size-normal {
+  font-size: 100%;
+}
+
+html.font-size-large {
+  font-size: 115%;
+}
+
+html.font-size-extra-large {
+  font-size: 130%;
+}
+
 /* Custom fade-in micro-animations */
 @keyframes fadeIn {
   from {
@@ -283,3 +295,38 @@ body {
     transition-duration: 1ms !important;
   }
 }
+
+/* Landscape video player forced styles */
+@media (orientation: portrait) {
+  .landscape-video-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vh;
+    height: 100vw;
+    transform: translate(-50%, -50%) rotate(90deg);
+    z-index: 9999;
+    background: black;
+    overflow: hidden;
+  }
+}
+@media (orientation: landscape) {
+  .landscape-video-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    background: black;
+    overflow: hidden;
+  }
+}
+
+.landscape-video-container video,
+.landscape-video-container iframe {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+

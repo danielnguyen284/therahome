@@ -37,7 +37,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/onboarding/splash');
+    router.push('/login');
   };
 
   return (

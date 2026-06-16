@@ -79,6 +79,7 @@ model Product {
   name          String
   image_url     String   @default("")
   purchase_link String   @default("")
+  description   String   @default("")
   is_active     Boolean  @default(true)
   created_at    DateTime @default(now())
   updated_at    DateTime @default(now()) @updatedAt

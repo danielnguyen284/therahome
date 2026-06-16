@@ -14,6 +14,7 @@ interface Product {
   name: string;
   image_url: string;
   purchase_link: string;
+  description: string;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
@@ -24,6 +25,7 @@ interface ProductForm {
   name: string;
   image_url: string;
   purchase_link: string;
+  description: string;
 }
 
 const EMPTY_FORM: ProductForm = {
@@ -31,6 +33,7 @@ const EMPTY_FORM: ProductForm = {
   name: '',
   image_url: '',
   purchase_link: '',
+  description: '',
 };
 
 const getErrorMessage = (error: unknown, fallback: string) =>
@@ -89,6 +92,7 @@ export default function ProductsPage() {
       name: product.name,
       image_url: product.image_url || '',
       purchase_link: product.purchase_link || '',
+      description: product.description || '',
     });
     setShowModal(true);
   };
@@ -116,6 +120,7 @@ export default function ProductsPage() {
         name: form.name.trim(),
         image_url: form.image_url.trim(),
         purchase_link: form.purchase_link.trim(),
+        description: form.description.trim(),
       };
 
       if (editingProduct) {
@@ -314,6 +319,21 @@ export default function ProductsPage() {
             value={form.image_url}
             onChange={(url) => setForm((current) => ({ ...current, image_url: url }))}
           />
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Mô tả sản phẩm
+            </label>
+            <textarea
+              value={form.description}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, description: event.target.value }))
+              }
+              placeholder="Nhập mô tả sản phẩm..."
+              rows={3}
+              className="input py-2"
+            />
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">

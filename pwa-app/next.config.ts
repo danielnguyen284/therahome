@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const backendApiUrl = process.env.BACKEND_API_URL || 'http://localhost:5001/api';
 
-const nextConfig: NextConfig = {
+const nextConfig: any = {
   /* config options here */
   images: {
     remotePatterns: [
@@ -15,6 +16,9 @@ const nextConfig: NextConfig = {
   experimental: {
     cpus: 1,
     memoryBasedWorkersCount: true,
+  },
+  turbopack: {
+    root: path.resolve(__dirname),
   },
   async rewrites() {
     return [

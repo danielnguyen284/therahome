@@ -138,9 +138,19 @@ export default function ExploreScreen() {
 								nhiều và hay mỏi cổ.
 							</Text>
 							{hasNeckDevice ? (
-								<View style={styles.activatedBadge}>
-									<Check size={16} color="#FFFFFF" strokeWidth={3} />
-									<Text style={styles.activatedBadgeText}>Đã kích hoạt</Text>
+								<View style={styles.actionRow}>
+									<View style={styles.activatedBadge}>
+										<Check size={16} color="#FFFFFF" strokeWidth={3} />
+										<Text style={styles.activatedBadgeText}>Đã kích hoạt</Text>
+									</View>
+									<Pressable
+										onPress={() => {
+											Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+											router.push("/product-assessments");
+										}}
+									>
+										<Text style={styles.actionPillPrimary}>Gửi đánh giá</Text>
+									</Pressable>
 								</View>
 							) : (
 								<View style={styles.actionRow}>
@@ -187,9 +197,19 @@ export default function ExploreScreen() {
 								cho nhu cầu phục hồi cơ sâu.
 							</Text>
 							{hasBackDevice ? (
-								<View style={styles.activatedBadge}>
-									<Check size={16} color="#FFFFFF" strokeWidth={3} />
-									<Text style={styles.activatedBadgeText}>Đã kích hoạt</Text>
+								<View style={styles.actionRow}>
+									<View style={styles.activatedBadge}>
+										<Check size={16} color="#FFFFFF" strokeWidth={3} />
+										<Text style={styles.activatedBadgeText}>Đã kích hoạt</Text>
+									</View>
+									<Pressable
+										onPress={() => {
+											Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+											router.push("/product-assessments");
+										}}
+									>
+										<Text style={styles.actionPillPrimary}>Gửi đánh giá</Text>
+									</Pressable>
 								</View>
 							) : (
 								<View style={styles.actionRow}>

@@ -20,9 +20,9 @@ router.get('/', async (req, res) => {
 // POST /api/products
 router.post('/', protect, adminOnly, async (req, res) => {
   try {
-    const { key, name, image_url, purchase_link, is_active } = req.body;
+    const { key, name, image_url, purchase_link, description, is_active } = req.body;
     const item = await prisma.product.create({
-      data: { key, name, image_url, purchase_link, is_active },
+      data: { key, name, image_url, purchase_link, description, is_active },
     });
     res.status(201).json(item);
   } catch (error) {
@@ -34,10 +34,10 @@ router.post('/', protect, adminOnly, async (req, res) => {
 // PUT /api/products/:id
 router.put('/:id', protect, adminOnly, async (req, res) => {
   try {
-    const { key, name, image_url, purchase_link, is_active } = req.body;
+    const { key, name, image_url, purchase_link, description, is_active } = req.body;
     const item = await prisma.product.update({
       where: { id: req.params.id },
-      data: { key, name, image_url, purchase_link, is_active },
+      data: { key, name, image_url, purchase_link, description, is_active },
     });
     res.json(item);
   } catch (error) {

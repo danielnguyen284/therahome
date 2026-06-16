@@ -221,48 +221,16 @@ export default function WorkoutPlanDetailPage() {
       </div>
 
       {/* Day details and Launch Button */}
-      {currentDayData && (
+      {currentDayData && currentDayData.exercises.length > 0 && (
         <div className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-sm font-black text-slate-850 dark:text-white">
-              Chi tiết Ngày {currentDay}
-            </h3>
-            <span className="text-[10px] font-bold text-slate-400">
-              {currentDayData.exercises.length} động tác
-            </span>
-          </div>
-
-          <div className="space-y-3">
-            {currentDayData.exercises.map((item, idx) => (
-              <div
-                key={item.id || idx}
-                className="flex items-center gap-3.5 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-850 rounded-2xl p-3"
-              >
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center shrink-0">
-                  {idx + 1}
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-xs font-bold text-slate-750 dark:text-slate-250 line-clamp-1">
-                    {item.exercise?.title}
-                  </h4>
-                  <p className="text-[10px] text-slate-400 mt-0.5">
-                    Thời gian: {item.exercise?.duration} giây
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {currentDayData.exercises.length > 0 && (
-            <button
-              onClick={handleStartDay}
-              className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-100 dark:shadow-none transition-all"
-            >
-              <Play className="w-4 h-4 fill-current" />
-              {currentDayData.isCompleted ? 'Tập lại ngày này' : 'Bắt đầu bài tập hôm nay'}
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          )}
+          <button
+            onClick={handleStartDay}
+            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-100 dark:shadow-none transition-all"
+          >
+            <Play className="w-4 h-4 fill-current" />
+            {currentDayData.isCompleted ? 'Tập lại ngày này' : 'Bắt đầu bài tập hôm nay'}
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       )}
 

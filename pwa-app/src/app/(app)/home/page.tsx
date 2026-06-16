@@ -25,6 +25,15 @@ import {
   Lock,
   ClipboardList,
 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip
+} from 'recharts';
+
 
 interface PainLog {
   id: string;
@@ -97,6 +106,30 @@ export default function HomePage() {
   // Dialog state
   const [showScoreInfo, setShowScoreInfo] = useState(false);
   const [currentTime] = useState(() => Date.now());
+
+  // Format pain logs data for the 7-day trend chart
+  const painChartData = useMemo(() => {
+    if (!painHistory || painHistory.length === 0) return [];
+    
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date.toISOString().split('T')[0];
+    });
+
+    return last7Days.map(day => {
+      const logsForDay = painHistory.filter((log: any) => log.created_at?.startsWith(day) || log.date?.startsWith(day));
+      const value = logsForDay.length === 0
+        ? 0
+        : logsForDay.reduce((sum: number, log: any) => sum + log.pain_level, 0) / logsForDay.length;
+
+      const dateObj = new Date(day);
+      return {
+        name: `${dateObj.getDate()}/${dateObj.getMonth() + 1}`,
+        'Mức đau': Math.round(value * 10) / 10,
+      };
+    });
+  }, [painHistory]);
 
   // Personalized Plan Unlock Check
   const personalizedPlanUnlocked = useMemo(() => {
@@ -390,83 +423,11 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 14 ngày phục hồi chuyên sâu */}
-      <Link
-        href={resolvedPlanId ? `/workout-plan-detail/${resolvedPlanId}?selectedArea=${resolvedArea}&selectedAreaLabel=${encodeURIComponent(resolvedAreaLabel)}` : '/pain-input'}
-        className="relative flex min-h-[148px] cursor-pointer flex-col justify-between overflow-hidden rounded-[22px] bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-400 p-4 text-white shadow-lg shadow-emerald-100 transition-all hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] dark:shadow-none md:p-6"
-      >
-        <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/20 blur-2xl"></div>
-        <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/20 ring-1 ring-white/25 backdrop-blur-md md:h-12 md:w-12">
-            <ClipboardList className="h-5 w-5 text-white md:h-6 md:w-6" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <span className="mb-1.5 inline-flex w-fit rounded-full bg-white/20 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white/90">
-              Lộ trình 14 ngày
-            </span>
-            <h3 className="text-base font-black leading-snug text-white md:text-lg">14 ngày phục hồi chuyên sâu</h3>
-            <p className="mt-1 text-[11px] leading-snug text-white/85">Theo dõi tiến độ và bắt đầu bài tập hôm nay</p>
-          </div>
-        </div>
-
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 shadow-sm">
-            Bắt đầu bài tập
-          </span>
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/25">
-            <ChevronRight className="h-4 w-4 text-white" />
-          </span>
-        </div>
-      </Link>
-
-      {/* Water Tracker Widget */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between min-h-[160px]">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="font-bold text-slate-850 dark:text-slate-100 text-base flex items-center gap-2 mb-1">
-              <Droplet className="w-5 h-5 text-blue-500 fill-blue-500" />
-              Nước uống
-            </h3>
-            <p className="text-[11px] text-slate-450 dark:text-slate-400 leading-relaxed">
-              Mục tiêu uống đủ nước giúp hỗ trợ lưu thông máu.
-            </p>
-          </div>
-
-          <div className="text-right">
-            <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">{water.cups}</span>
-            <span className="text-[11px] text-slate-400 font-medium">/{water.goal} cốc</span>
-          </div>
-        </div>
-
-        {/* Water progress indicator */}
-        <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full my-3 overflow-hidden">
-          <div
-            className="h-full bg-blue-500 rounded-full transition-all duration-300"
-            style={{ width: `${Math.min((water.cups / water.goal) * 100, 100)}%` }}
-          ></div>
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleWaterChange(-1)}
-            className="flex-1 py-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-855 text-slate-655 dark:text-slate-300 flex items-center justify-center transition-all cursor-pointer active:scale-95"
-          >
-            <Minus className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleWaterChange(1)}
-            className="flex-1 py-2 rounded-xl bg-blue-650 hover:bg-blue-700 text-white flex items-center justify-center transition-all shadow-md shadow-blue-100 dark:shadow-none cursor-pointer active:scale-95"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Cá nhân hoá lộ trình hôm nay */}
+      {/* 14 ngày phục hồi chuyên sâu OR Cá nhân hóa lộ trình (Unlocked) */}
       {personalizedPlanUnlocked ? (
         <Link
           href={todayPainLog ? '/recommendations' : '/pain-input?redirectTo=/recommendations'}
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-tr from-indigo-500 to-purple-650 p-6 text-white shadow-lg shadow-indigo-150 dark:shadow-none hover:shadow-xl hover:scale-[1.02] active:scale-98 transition-all cursor-pointer flex flex-col justify-between min-h-[148px]"
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-tr from-indigo-500 to-purple-600 p-6 text-white shadow-lg shadow-indigo-100 dark:shadow-none hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex flex-col justify-between min-h-[148px]"
         >
           <div className="absolute right-0 top-0 -mr-4 -mt-4 w-24 h-24 bg-white/10 rounded-full blur-lg pointer-events-none"></div>
           <div className="flex items-start gap-3">
@@ -492,23 +453,147 @@ export default function HomePage() {
           </div>
         </Link>
       ) : (
-        <div className="relative overflow-hidden rounded-[22px] bg-slate-100 dark:bg-slate-900 border border-slate-205 dark:border-slate-800 p-6 text-slate-400 dark:text-slate-500 flex flex-col justify-between min-h-[148px]">
+        <Link
+          href={resolvedPlanId ? `/workout-plan-detail/${resolvedPlanId}?selectedArea=${resolvedArea}&selectedAreaLabel=${encodeURIComponent(resolvedAreaLabel)}` : '/pain-input'}
+          className="relative flex min-h-[148px] cursor-pointer flex-col justify-between overflow-hidden rounded-[22px] bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-400 p-4 text-white shadow-lg shadow-emerald-100 transition-all hover:scale-[1.02] hover:shadow-xl active:scale-95 dark:shadow-none md:p-6"
+        >
+          <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/20 blur-2xl"></div>
           <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-450 dark:text-slate-505">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/20 ring-1 ring-white/25 backdrop-blur-md md:h-12 md:w-12">
+              <ClipboardList className="h-5 w-5 text-white md:h-6 md:w-6" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="mb-1.5 inline-flex w-fit rounded-full bg-white/20 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white/90">
+                Lộ trình 14 ngày
+              </span>
+              <h3 className="text-base font-black leading-snug text-white md:text-lg">14 ngày phục hồi chuyên sâu</h3>
+              <p className="mt-1 text-[11px] leading-snug text-white/85">Theo dõi tiến độ và bắt đầu bài tập hôm nay</p>
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 shadow-sm">
+              Bắt đầu trị liệu
+            </span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/25">
+              <ChevronRight className="h-4 w-4 text-white" />
+            </span>
+          </div>
+        </Link>
+      )}
+
+      {/* Water Tracker Widget */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+        <div className="flex justify-between items-center">
+          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base flex items-center gap-2">
+            <Droplet className="w-5 h-5 text-blue-500 fill-blue-500/20" />
+            Uống nước
+          </h3>
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            Mục tiêu {water.goal} cốc
+          </span>
+        </div>
+
+        {/* Circular Progress controls row */}
+        <div className="flex items-center justify-around my-5">
+          {/* Minus Button */}
+          <button
+            onClick={() => handleWaterChange(-1)}
+            disabled={water.cups <= 0}
+            className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-200 flex items-center justify-center transition-all cursor-pointer active:scale-90 border border-slate-200 dark:border-slate-700 disabled:opacity-40"
+          >
+            <Minus className="w-5 h-5" strokeWidth={3} />
+          </button>
+
+          {/* Circle progress indicator */}
+          <div className="relative w-28 h-28 flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 112 112">
+              <circle
+                cx="56"
+                cy="56"
+                r="46"
+                className="stroke-slate-100 dark:stroke-slate-800"
+                strokeWidth="6.5"
+                fill="transparent"
+              />
+              <circle
+                cx="56"
+                cy="56"
+                r="46"
+                className="stroke-blue-500 transition-all duration-300"
+                strokeWidth="6.5"
+                fill="transparent"
+                strokeDasharray={2 * Math.PI * 46}
+                strokeDashoffset={2 * Math.PI * 46 * (1 - Math.min(water.cups / water.goal, 1))}
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <Droplet className="w-4 h-4 text-blue-500 fill-blue-500/10 mb-0.5" />
+              <span className="text-2xl font-black text-slate-850 dark:text-white leading-none">{water.cups}</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-1">/{water.goal} cốc</span>
+            </div>
+          </div>
+
+          {/* Plus Button */}
+          <button
+            onClick={() => handleWaterChange(1)}
+            className="w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-all shadow-md shadow-blue-100 dark:shadow-none cursor-pointer active:scale-90"
+          >
+            <Plus className="w-5 h-5" strokeWidth={3} />
+          </button>
+        </div>
+
+        {/* Footer info message */}
+        <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center italic mt-1 font-medium">
+          * Đừng quên nước rất tốt cho đĩa đệm
+        </p>
+      </div>
+
+      {/* Biểu đồ đau (7 ngày gần nhất) */}
+      {painHistory.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4">
+          <h3 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">
+            Xu hướng mức độ đau (7 ngày)
+          </h3>
+          <div className="h-44">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={painChartData}>
+                <XAxis dataKey="name" stroke="#8b5cf6" fontSize={10} tickLine={false} />
+                <YAxis domain={[0, 10]} stroke="#8b5cf6" fontSize={10} tickLine={false} />
+                <Tooltip contentStyle={{ borderRadius: 12, fontSize: 11 }} />
+                <Line
+                  type="monotone"
+                  dataKey="Mức đau"
+                  stroke="#8b5cf6"
+                  strokeWidth={3}
+                  dot={{ r: 4, strokeWidth: 2 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Cá nhân hoá lộ trình hôm nay (Locked) */}
+      {!personalizedPlanUnlocked && (
+        <div className="relative overflow-hidden rounded-[22px] bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 text-slate-500 dark:text-slate-400 flex flex-col justify-between min-h-[148px]">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
               <Lock className="w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1">
               <span className="mb-1.5 inline-flex w-fit rounded-full bg-slate-200 dark:bg-slate-800 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-500/80 dark:text-slate-400/80">
                 Cá nhân hóa
               </span>
-              <h3 className="text-base font-black leading-snug text-slate-700 dark:text-slate-350">Cá nhân hoá lộ trình hôm nay</h3>
-              <p className="mt-1 text-[11px] leading-snug text-slate-450 dark:text-slate-500">
+              <h3 className="text-base font-black leading-snug text-slate-700 dark:text-slate-300">Cá nhân hoá lộ trình hôm nay</h3>
+              <p className="mt-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
                 Mở khóa vào ngày 15 sau khi hoàn thành ngày 14
               </p>
             </div>
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-[9px] font-bold text-slate-450 dark:text-slate-505 uppercase tracking-wider">
+          <div className="mt-4 flex items-center justify-between text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             <span>Đang khóa</span>
             <Lock className="w-3.5 h-3.5 opacity-60" />
           </div>

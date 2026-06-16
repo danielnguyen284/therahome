@@ -5,7 +5,8 @@ export type StorageKey =
   | 'therahome_theme'
   | 'therahome_onboarding_draft'
   | 'therahome_onboarding_step'
-  | 'notificationsEnabled';
+  | 'notificationsEnabled'
+  | 'therahome_fontsize';
 
 const isClient = typeof window !== 'undefined';
 
