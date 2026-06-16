@@ -41,4 +41,4 @@ COPY --from=builder /app/utils ./utils
 # Port the backend runs on (default is 5001)
 EXPOSE 5001
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npx prisma migrate deploy && exec node server.js"]
