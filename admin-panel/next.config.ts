@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    cpus: 1,
+    memoryBasedWorkersCount: true,
+  },
   turbopack: {
     root: path.resolve(__dirname),
   },
