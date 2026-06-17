@@ -8,6 +8,9 @@ import { useRouter, usePathname } from 'next/navigation';
 import { api } from '../lib/api';
 import { storage } from '../lib/storage';
 
+const hasActivatedProduct = (user: { is_pro?: boolean; owned_devices?: unknown[] } | null) =>
+  Boolean(user?.is_pro || user?.owned_devices?.length);
+
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding)
@@ -113,7 +116,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         console.log('Web Push subscription registered successfully.');
 
       } catch (err) {
-        console.error('Error during Web Push registration:', err);
+        console.warn('Web Push registration skipped:', err instanceof Error ? err.message : err);
       }
     };
 
@@ -151,7 +154,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       router.push('/login');
     } else if (isAuthenticated && user) {
       if (isAuthRoute || pathname === '/') {
-        router.push(user.onboarding_completed ? '/activate-device' : getOnboardingTarget());
+        router.push(
+          user.onboarding_completed
+            ? hasActivatedProduct(user) ? '/home' : '/activate-device'
+            : getOnboardingTarget()
+        );
         return;
       }
 
@@ -164,8 +171,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const hasActivatedProduct = Boolean(user.is_pro || user.owned_devices?.length);
-      if (!hasActivatedProduct) {
+      if (!hasActivatedProduct(user)) {
         if (!isActivationRoute && !isLegalPublicRoute) {
           router.push('/activate-device');
         }

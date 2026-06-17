@@ -8,6 +8,11 @@ import { storage } from '../../../../lib/storage';
 import { getProfile } from '../../../../services/auth';
 import { useAuthStore } from '../../../../stores/authStore';
 
+const getPostLoginTarget = (profile: { onboarding_completed?: boolean; is_pro?: boolean; owned_devices?: unknown[] }) => {
+  if (!profile.onboarding_completed) return '/onboarding/welcome';
+  return profile.is_pro || profile.owned_devices?.length ? '/home' : '/activate-device';
+};
+
 function GoogleCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -34,8 +39,7 @@ function GoogleCallbackContent() {
                 setUser(profile);
                 setStatus('success');
                 setMessage('Đăng nhập Google thành công!');
-                const targetUrl = profile.onboarding_completed ? '/activate-device' : '/onboarding/welcome';
-                router.replace(targetUrl);
+                router.replace(getPostLoginTarget(profile));
               }
               return;
             }
@@ -71,7 +75,7 @@ function GoogleCallbackContent() {
         setStatus('success');
         setMessage('Đăng nhập Google thành công!');
 
-        const targetUrl = profile.onboarding_completed ? '/activate-device' : '/onboarding/welcome';
+        const targetUrl = getPostLoginTarget(profile);
         window.setTimeout(() => {
           router.replace(targetUrl);
         }, 700);

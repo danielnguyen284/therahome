@@ -24,6 +24,11 @@ type LoginSuccessResponse = {
   user: User;
 };
 
+const getPostLoginTarget = (user: User) => {
+  if (!user.onboarding_completed) return '/onboarding/welcome';
+  return user.is_pro || user.owned_devices?.length ? '/home' : '/activate-device';
+};
+
 type ActivationResponse = {
   user?: User;
 };
@@ -115,14 +120,13 @@ function LoginForm() {
         setSuccessMsg('Đăng nhập và kích hoạt thiết bị thành công!');
       }
 
-      const targetUrl = currentUser.onboarding_completed ? '/activate-device' : '/onboarding/welcome';
+      const targetUrl = getPostLoginTarget(currentUser);
       window.setTimeout(() => {
         router.push(targetUrl);
       }, 1100);
     } catch (err) {
       console.error('Login post-processing error:', err);
-      const targetUrl = typedAuthResponse.user.onboarding_completed ? '/activate-device' : '/onboarding/welcome';
-      router.push(targetUrl);
+      router.push(getPostLoginTarget(typedAuthResponse.user));
     } finally {
       setIsMerging(false);
     }
