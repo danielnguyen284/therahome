@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 import path from "path";
 
-const backendApiUrl = process.env.BACKEND_API_URL || 'http://localhost:5001/api';
+const backendApiUrl =
+  process.env.BACKEND_API_URL ||
+  (process.env.NODE_ENV === 'production'
+    ? 'https://api.therahomeai.com/api'
+    : 'http://localhost:5001/api');
 
 const nextConfig: any = {
   output: 'standalone',

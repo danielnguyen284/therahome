@@ -35,6 +35,9 @@ services:
     build:
       context: ./pwa-app
       dockerfile: Dockerfile
+      args:
+        BACKEND_API_URL: http://backend:5001/api
+        NEXT_PUBLIC_API_URL: /api
     container_name: thera_pwa_app
     restart: unless-stopped
     depends_on:
