@@ -10,7 +10,7 @@ interface GoogleLoginButtonProps {
   className?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/$/, '');
 
 export default function GoogleLoginButton({
   theme = 'outline',
@@ -30,7 +30,7 @@ export default function GoogleLoginButton({
       const callbackUrl = new URL('/auth/google/callback', window.location.origin);
       callbackUrl.search = window.location.search;
 
-      const startUrl = new URL(`${API_BASE_URL.replace(/\/$/, '')}/auth/google/start`, window.location.origin);
+      const startUrl = new URL(`${API_BASE_URL}/auth/google/start`, window.location.origin);
       startUrl.searchParams.set('redirectTo', callbackUrl.toString());
 
       window.location.assign(startUrl.toString());

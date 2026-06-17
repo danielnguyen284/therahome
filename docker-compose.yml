@@ -43,6 +43,7 @@ services:
       - PORT=3000
       - HOSTNAME=0.0.0.0
       - BACKEND_API_URL=http://backend:5001/api
+      - NEXT_PUBLIC_API_URL=/api
       - NODE_ENV=production
     ports:
       - "3000:3000"
