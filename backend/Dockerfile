@@ -32,6 +32,7 @@ COPY --from=builder /app/config ./config
 COPY --from=builder /app/imports ./imports
 COPY --from=builder /app/middleware ./middleware
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/routes ./routes
 COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/services ./services
