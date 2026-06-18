@@ -62,7 +62,7 @@ router.get('/random', protect, async (req, res) => {
     // Use Prisma raw queries for native PostgreSQL random sampling
     const regularItems = regularCount > 0 
       ? await prisma.$queryRaw`
-          SELECT * FROM "PersonalizedPlanVideo" 
+          SELECT * FROM "personalized_plan_videos" 
           WHERE video_group = 'regular' AND is_active = true 
           ORDER BY RANDOM() 
           LIMIT ${regularCount}
@@ -71,7 +71,7 @@ router.get('/random', protect, async (req, res) => {
 
     const deviceItems = deviceCount > 0
       ? await prisma.$queryRaw`
-          SELECT * FROM "PersonalizedPlanVideo" 
+          SELECT * FROM "personalized_plan_videos" 
           WHERE video_group = 'device_supported' AND is_active = true 
           ORDER BY RANDOM() 
           LIMIT ${deviceCount}

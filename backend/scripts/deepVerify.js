@@ -63,6 +63,9 @@ const EXPECTED_SCHEMA = {
   notification_tokens: [
     'id', 'user_id', 'token', 'platform', 'created_at'
   ],
+  personalized_plan_videos: [
+    'id', 'video_group', 'title', 'description', 'link', 'is_active', 'created_at', 'updated_at'
+  ],
 };
 
 async function verify() {
