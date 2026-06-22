@@ -467,7 +467,7 @@ export default function HomePage() {
                 Lộ trình 14 ngày
               </span>
               <h3 className="text-base font-black leading-snug text-white md:text-lg">14 ngày phục hồi chuyên sâu</h3>
-              <p className="mt-1 text-[11px] leading-snug text-white/85">Theo dõi tiến độ và bắt đầu bài tập hôm nay</p>
+              <p className="mt-1 text-[11px] leading-snug text-white/85">Theo dõi tiến độ và bắt đầu trị liệu hôm nay</p>
             </div>
           </div>
 

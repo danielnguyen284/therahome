@@ -179,7 +179,7 @@ export default function WorkoutPlanDetailPage() {
       <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4">
         <h3 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
           <Calendar className="w-4.5 h-4.5 text-indigo-600 animate-pulse" />
-          Lịch 14 Ngày Tập Luyện
+          Lịch 14 Ngày Trị Liệu
         </h3>
 
         {/* 14 Day Grid */}
@@ -228,7 +228,7 @@ export default function WorkoutPlanDetailPage() {
             className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-100 dark:shadow-none transition-all"
           >
             <Play className="w-4 h-4 fill-current" />
-            {currentDayData.isCompleted ? 'Tập lại ngày này' : 'Bắt đầu bài tập hôm nay'}
+            {currentDayData.isCompleted ? 'Tập lại ngày này' : 'Bắt đầu trị liệu hôm nay'}
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
